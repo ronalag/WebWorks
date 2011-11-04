@@ -39,6 +39,7 @@ import blackberry.core.threading.DispatchableEvent;
 /**
  * NavigationMapUpdateDispatcherEvent
  */
+// TODO: [RT] This entire class can be deleted, keeping it here for now to double-check logic
 class NavigationMapUpdateDispatcherEvent extends DispatchableEvent {
     
     private final NavigationController _navigationController;
@@ -54,92 +55,92 @@ class NavigationMapUpdateDispatcherEvent extends DispatchableEvent {
 
     // << DispatchableEvent >>
     protected void dispatch() {
-        _navigationController._dom = _navigationController._browserField.getDocument();
-
-        // Reset iframe hashtable
-        Hashtable iframeHashtable = _navigationController.getIFrameHashtable();
-        iframeHashtable.clear();
-    	_navigationController.setIFrameHashtable( iframeHashtable );
-        
-        if( _pageLoaded ) {
-            // Create navigation map
-            _navigationController._focusableNodes = populateFocusableNodes( true, _navigationController._dom );
-            _navigationController._defaultHoverEffect = isDefaultHoverEffectEnabled( _navigationController._dom );
-            // Set first focus
-            Node firstFocusNode = findInitialFocusNode();
-            if( firstFocusNode == null ) {
-                _navigationController.handleInitFocus();
-            } else {
-                _navigationController.setFocus( firstFocusNode );
-            }
-        } else {
-            // Update navigation map
-            _navigationController._focusableNodes = populateFocusableNodes( false, _navigationController._dom );
-            if( _navigationController._currentFocusNode != null ) {
-                if( !_navigationController.isValidFocusableNode( _navigationController._currentFocusNode ) ) {
-                    _navigationController._currentFocusNode = null;
-                }
-            }
-        }
-        return;
+//        _navigationController._dom = _navigationController._browserField.getDocument();
+//
+//        // Reset iframe hashtable
+//        Hashtable iframeHashtable = _navigationController.getIFrameHashtable();
+//        iframeHashtable.clear();
+//    	_navigationController.setIFrameHashtable( iframeHashtable );
+//        
+//        if( _pageLoaded ) {
+//            // Create navigation map
+//            _navigationController._focusableNodes = populateFocusableNodes( true, _navigationController._dom );
+//            _navigationController._defaultHoverEffect = isDefaultHoverEffectEnabled( _navigationController._dom );
+//            // Set first focus
+//            Node firstFocusNode = findInitialFocusNode();
+//            if( firstFocusNode == null ) {
+//                _navigationController.handleInitFocus();
+//            } else {
+//                _navigationController.setFocus( firstFocusNode );
+//            }
+//        } else {
+//            // Update navigation map
+//            _navigationController._focusableNodes = populateFocusableNodes( false, _navigationController._dom );
+//            if( _navigationController._currentFocusNode != null ) {
+//                if( !_navigationController.isValidFocusableNode( _navigationController._currentFocusNode ) ) {
+//                    _navigationController._currentFocusNode = null;
+//                }
+//            }
+//        }
+//        return;
     }
     
     private Node findInitialFocusNode() {
-        if( _navigationController._focusableNodes == null || _navigationController._focusableNodes.size() == 0 ) 
-            return null;
-        for( int i = 0; i < _navigationController._focusableNodes.size(); i++ ) {
-            Node node = (Node) _navigationController._focusableNodes.elementAt( i );
-            XYRect nodeRect = _navigationController._widgetFieldManager.getPosition( node );
-            if( nodeRect == null || nodeRect.width == 0 || nodeRect.height == 0 ) {
-                continue;
-            }
-            if( _navigationController.isFocusableDisabled( node ) ) {
-                continue;
-            }
-            if( isInitialFocusNode( node ) ) {
-                return node;
-            }
-        }
+//        if( _navigationController._focusableNodes == null || _navigationController._focusableNodes.size() == 0 ) 
+//            return null;
+//        for( int i = 0; i < _navigationController._focusableNodes.size(); i++ ) {
+//            Node node = (Node) _navigationController._focusableNodes.elementAt( i );
+//            XYRect nodeRect = _navigationController._widgetFieldManager.getPosition( node );
+//            if( nodeRect == null || nodeRect.width == 0 || nodeRect.height == 0 ) {
+//                continue;
+//            }
+//            if( _navigationController.isFocusableDisabled( node ) ) {
+//                continue;
+//            }
+//            if( isInitialFocusNode( node ) ) {
+//                return node;
+//            }
+//        }
         return null;
     }
     
     private Vector populateFocusableNodes( boolean firstLoad, final Document targetDom ) {
         Vector focusableNodes = new Vector();
-        NodeSelector selector = (NodeSelector) targetDom;
-        NodeList nodeList = selector
-                .querySelectorAll( "textarea:not([x-blackberry-focusable=false]),a:not([x-blackberry-focusable=false]),input:not([x-blackberry-focusable=false]),select:not([x-blackberry-focusable=false]),button:not([x-blackberry-focusable=false]),[x-blackberry-focusable=true]" );
-        for( int i = 0; i < nodeList.getLength(); i++ ) {
-            Node node = nodeList.item( i );
-            if( node instanceof HTMLSelectElement && ( (HTMLSelectElement) node ).getMultiple() ) {
-            } else if( node instanceof HTMLInputElement && ( (HTMLInputElement) node ).getType().equals( "hidden" ) ) {
-            } else {
-
-            	// Check for iframes 
-                IFrameSearchResult result = checkForIframe(node);
-                
-                // Append focusable nodes of the iframe if an iframe was found in the search
-                if( result.hasIFrameNode() ){
-                	Vector iframeFocusableNodes = result.getIFrameFocusableNodes();
-                	Node iframeChildNode;
-                	int size = iframeFocusableNodes.size();
-                	for( int j = 0; j < size ; j++ ){
-                		iframeChildNode = (Node)iframeFocusableNodes.elementAt( j );
-                		focusableNodes.addElement( iframeChildNode );
-                		
-                		/* Add the iframe to the child-parent hash.
-                		 * Used later to calculate proper XY coordinates */                		
-                    	Hashtable iframeHashtable = _navigationController.getIFrameHashtable();
-                		iframeHashtable.put( iframeChildNode, result.getTargetNode() );
-                		_navigationController.setIFrameHashtable( iframeHashtable );
-                	}      
-                }
-                /* If an iframe was not found, then the target node is just a 
-                regular focusable node.  Add it to the list*/
-                else{
-                	focusableNodes.addElement( result.getTargetNode() );
-                }
-            }
-        }
+//        NodeSelector selector = (NodeSelector) targetDom;
+//        NodeList nodeList = selector
+//                .querySelectorAll( "textarea:not([x-blackberry-focusable=false]),a:not([x-blackberry-focusable=false]),input:not([x-blackberry-focusable=false]),select:not([x-blackberry-focusable=false]),button:not([x-blackberry-focusable=false]),[x-blackberry-focusable=true]" );
+//        for( int i = 0; i < nodeList.getLength(); i++ ) {
+//            Node node = nodeList.item( i );
+//            if( node instanceof HTMLSelectElement && ( (HTMLSelectElement) node ).getMultiple() ) {
+//            } else if( node instanceof HTMLInputElement && ( (HTMLInputElement) node ).getType().equals( "hidden" ) ) {
+//            } else {
+//
+//            	// Check for iframes 
+//                IFrameSearchResult result = checkForIframe(node);
+//                
+//                // Append focusable nodes of the iframe if an iframe was found in the search
+//                if( result.hasIFrameNode() ){
+//                	Vector iframeFocusableNodes = result.getIFrameFocusableNodes();
+//                	Node iframeChildNode;
+//                	int size = iframeFocusableNodes.size();
+//                	for( int j = 0; j < size ; j++ ){
+//                		iframeChildNode = (Node)iframeFocusableNodes.elementAt( j );
+//                		focusableNodes.addElement( iframeChildNode );
+//                		
+//                		/* Add the iframe to the child-parent hash.
+//                		 * Used later to calculate proper XY coordinates */                		
+//                    	Hashtable iframeHashtable = _navigationController.getIFrameHashtable();
+//                		iframeHashtable.put( iframeChildNode, result.getTargetNode() );
+//                		_navigationController.setIFrameHashtable( iframeHashtable );
+//                	}      
+//                }
+//                /* If an iframe was not found, then the target node is just a 
+//                regular focusable node.  Add it to the list*/
+//                else{
+//                	focusableNodes.addElement( result.getTargetNode() );
+//                }
+//            }
+//        }
         return focusableNodes;
     }
     
