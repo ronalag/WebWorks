@@ -16,31 +16,18 @@
 package blackberry.web.widget.bf.navigationcontroller;
 
 import java.util.Hashtable;
-import java.util.Vector;
 
 import net.rim.device.api.browser.field2.BrowserField;
 import net.rim.device.api.system.Application;
-import net.rim.device.api.ui.XYRect;
 
 import org.w3c.dom.Attr;
-import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
-import org.w3c.dom.events.DocumentEvent;
-import org.w3c.dom.events.Event;
-import org.w3c.dom.events.EventTarget;
-import org.w3c.dom.html2.HTMLButtonElement;
-import org.w3c.dom.html2.HTMLInputElement;
-import org.w3c.dom.html2.HTMLObjectElement;
-import org.w3c.dom.html2.HTMLSelectElement;
-import org.w3c.dom.html2.HTMLTextAreaElement;
 
 import blackberry.core.threading.Dispatcher;
-import blackberry.core.threading.GenericDispatcherEvent;
 import blackberry.web.widget.bf.BrowserFieldScreen;
 import blackberry.web.widget.bf.NavigationNamespace;
 import blackberry.web.widget.bf.WidgetFieldManager;
-import blackberry.web.widget.device.DeviceInfo;
 
 /**
  * NavigationController
@@ -70,13 +57,13 @@ final public class NavigationController {
     WidgetFieldManager         _widgetFieldManager;
 
     // Members /*package*/
-    Node                       _currentFocusNode;
-    boolean                    _currentNodeHovered;
-    boolean                    _currentNodeFocused;
-    Document                   _dom;
-    Vector                     _focusableNodes;
-    private boolean            _pageLoaded;
-    boolean                    _defaultHoverEffect;
+//    Node                       _currentFocusNode;
+//    boolean                    _currentNodeHovered;
+//    boolean                    _currentNodeFocused;
+//    Document                   _dom;
+//    Vector                     _focusableNodes;
+//    private boolean            _pageLoaded;
+//    boolean                    _defaultHoverEffect;
     Hashtable				   _iframeHashtable;
 
     /* Creates a new NavigationController. */
@@ -84,20 +71,20 @@ final public class NavigationController {
         _browserField = widgetScreen.getWidgetBrowserField();
         _navigationNamespace = widgetScreen.getNavigationExtension();
         _widgetFieldManager = widgetScreen.getWidgetFieldManager();
-        _currentNodeHovered = true;
-        _defaultHoverEffect = true;
+//        _currentNodeHovered = true;
+//        _defaultHoverEffect = true;
         _iframeHashtable = new Hashtable();
     }
 
     public void reset() {
         clearEventQueue();
-        _dom = null;
-        _currentFocusNode = null;
-        _currentNodeHovered = true;
-        _currentNodeFocused = false;
-        _focusableNodes = null;
-        _pageLoaded = false;
-        _defaultHoverEffect = true;
+//        _dom = null;
+//        _currentFocusNode = null;
+//        _currentNodeHovered = true;
+//        _currentNodeFocused = false;
+//        _focusableNodes = null;
+//        _pageLoaded = false;
+//        _defaultHoverEffect = true;
     }
     
     public void clearEventQueue() {
@@ -106,70 +93,70 @@ final public class NavigationController {
         }
     }
 
-    public void update() {
-        if( !_pageLoaded ) {
-            _pageLoaded = true;
-            Dispatcher.getInstance().dispatch( 
-                    new NavigationMapUpdateDispatcherEvent( this, this, true ) );
-        } else {
-            if( _currentFocusNode != null ) {
-                if( !isValidFocusableNode( _currentFocusNode ) ) {
-                    _currentFocusNode = null;
-                } else {
-                    _currentNodeHovered = _browserField.setHover( _currentFocusNode, true );
-                    // Scroll to the current focus node
-                    _widgetFieldManager.scrollToNode( _currentFocusNode );
-                }
-            }
-            Dispatcher.getInstance().dispatch( 
-                    new NavigationMapUpdateDispatcherEvent( this, this, false ) );
-        }
-    }
+//    public void update() {
+//        if( !_pageLoaded ) {
+//            _pageLoaded = true;
+//            Dispatcher.getInstance().dispatch( 
+//                    new NavigationMapUpdateDispatcherEvent( this, this, true ) );
+//        } else {
+//            if( _currentFocusNode != null ) {
+//                if( !isValidFocusableNode( _currentFocusNode ) ) {
+//                    _currentFocusNode = null;
+//                } else {
+//                    _currentNodeHovered = _browserField.setHover( _currentFocusNode, true );
+//                    // Scroll to the current focus node
+//                    _widgetFieldManager.scrollToNode( _currentFocusNode );
+//                }
+//            }
+//            Dispatcher.getInstance().dispatch( 
+//                    new NavigationMapUpdateDispatcherEvent( this, this, false ) );
+//        }
+//    }
     
-    public void setRimFocus( String id ) {
-        if( id.length() == 0 ) {
-            focusOut();
-            return;
-        }
-        Node nextFocusNode = null;
-        nextFocusNode = _dom.getElementById( id );
-        if( nextFocusNode != null ) {
-            if( !isValidFocusableNode( nextFocusNode ) ) {
-                nextFocusNode = null;
-            }
-        }
-        if( nextFocusNode != null ) {
-            setFocus( nextFocusNode );
-        }
-    }
+//    public void setRimFocus( String id ) {
+//        if( id.length() == 0 ) {
+//            focusOut();
+//            return;
+//        }
+//        Node nextFocusNode = null;
+//        nextFocusNode = _dom.getElementById( id );
+//        if( nextFocusNode != null ) {
+//            if( !isValidFocusableNode( nextFocusNode ) ) {
+//                nextFocusNode = null;
+//            }
+//        }
+//        if( nextFocusNode != null ) {
+//            setFocus( nextFocusNode );
+//        }
+//    }
 
-    public Node getCurrentFocusNode() {
-        return _currentFocusNode;
-    }
+//    public Node getCurrentFocusNode() {
+//        return _currentFocusNode;
+//    }
 
-    public boolean requiresDefaultHover() {
-        return ( _currentFocusNode != null && !_currentNodeHovered && _defaultHoverEffect );
-    }
+//    public boolean requiresDefaultHover() {
+//        return ( _currentFocusNode != null && !_currentNodeHovered && _defaultHoverEffect );
+//    }
 
-    public boolean requiresDefaultNavigation() {
-        return ( _currentFocusNode != null && _currentNodeFocused && requiresNavigation( _currentFocusNode ) );
-    }
+//    public boolean requiresDefaultNavigation() {
+//        return ( _currentFocusNode != null && _currentNodeFocused && requiresNavigation( _currentFocusNode ) );
+//    }
     
     /* Handles the navigation movement based on direction */
-    public void handleDirection( int direction ) {
-        dispatchUiEvent( NAVIGATION_EVENT_DIRECTION, direction );
+    public void handleDirection( int direction, int delta ) {
+        dispatchUiEvent( NAVIGATION_EVENT_DIRECTION, direction, delta );
     }
     
     public void handleClick() {
-        dispatchUiEvent( NAVIGATION_EVENT_CLICK, FOCUS_NAVIGATION_UNDEFINED );
+        dispatchUiEvent( NAVIGATION_EVENT_CLICK, FOCUS_NAVIGATION_UNDEFINED, 0 ); // TODO: [RT] find out how to get delta
     }
     
     public void handleUnclick() {
-        dispatchUiEvent( NAVIGATION_EVENT_UNCLICK, FOCUS_NAVIGATION_UNDEFINED );
+        dispatchUiEvent( NAVIGATION_EVENT_UNCLICK, FOCUS_NAVIGATION_UNDEFINED, 0 ); // TODO: [RT] find out how to get delta
     }
     
     public void handleInitFocus() {
-        dispatchUiEvent(NAVIGATION_EVENT_INITFOCUS, FOCUS_NAVIGATION_UNDEFINED);
+        dispatchUiEvent( NAVIGATION_EVENT_INITFOCUS, FOCUS_NAVIGATION_UNDEFINED, 0 ); // TODO: [RT] find out how to get delta
     }
 
     public void setIFrameHashtable( Hashtable newHash ){
@@ -184,69 +171,71 @@ final public class NavigationController {
      * Deselects the node with the current navigation focus
      */
     public void deselectFocusedNode(){
-    	focusOut();
+//    	focusOut();
+        _navigationNamespace.triggerNavigationFocusOut();
+        // TODO: [RT] need to invoke JS code to focusOut
     }
     
     // Internal methods...
 
-    private boolean dispatchUiEvent( int eventType, int direction ) {
-        if( _dom == null )
-            return false;
+    private boolean dispatchUiEvent( int eventType, int direction, int delta ) {
+//        if( _dom == null )
+//            return false;
         return Dispatcher.getInstance().dispatch( 
-                new NavigationUiDispatcherEvent( this, this, eventType, direction ) );
+                new NavigationUiDispatcherEvent( this, this, eventType, direction, delta ) );
     }
     
-    void setFocus( Node node ) {
-        if( node == null )
-            return;
-
-        focusOut();
-
-        // Focus in...
-        _currentFocusNode = node;
-
-        String id = getNamedAttibute( node, "id" );
-        _navigationNamespace.setNewFocusedId( id );
-
-        // Create a synthetic mouse over Event
-        fireMouseEvent( "mouseover", node );
-
-        // Call BF setHover
-        _currentNodeHovered = _browserField.setHover( node, true );
-
-        if( isAutoFocus( node ) ) {
-            _currentNodeFocused = _browserField.setFocus( node, true );
-        }
-
-        // Scroll to the current focus node
-        _widgetFieldManager.scrollToNode( node );
-        _widgetFieldManager.invalidateNode( node );
-    }
-
-    void focusOut() {
-        if( _currentFocusNode != null ) {
-            String id = getNamedAttibute( _currentFocusNode, "id" );
-            _navigationNamespace.setOldFocusedId( id );
-
-            // Disable BF focus
-            if( _currentNodeFocused ) {
-                _browserField.setFocus( _currentFocusNode, false );
-                _currentNodeFocused = false;
-            }
-
-            // Disable BF hover
-            _browserField.setHover( _currentFocusNode, false );
-
-            // Create a synthetic mouseout Event
-            fireMouseEvent( "mouseout", _currentFocusNode );
-
-            // Invalidate the area of old _currentFocusNode
-            _widgetFieldManager.invalidateNode( _currentFocusNode );
-
-            _currentFocusNode = null;
-            _navigationNamespace.setNewFocusedId( null );
-        }
-    }
+//    void setFocus( Node node ) {
+//        if( node == null )
+//            return;
+//
+//        focusOut();
+//
+//        // Focus in...
+//        _currentFocusNode = node;
+//
+//        String id = getNamedAttibute( node, "id" );
+//        _navigationNamespace.setNewFocusedId( id );
+//
+//        // Create a synthetic mouse over Event
+//        fireMouseEvent( "mouseover", node );
+//
+//        // Call BF setHover
+//        _currentNodeHovered = _browserField.setHover( node, true );
+//
+//        if( isAutoFocus( node ) ) {
+//            _currentNodeFocused = _browserField.setFocus( node, true );
+//        }
+//
+//        // Scroll to the current focus node
+//        _widgetFieldManager.scrollToNode( node );
+//        _widgetFieldManager.invalidateNode( node );
+//    }
+//
+//    void focusOut() {
+//        if( _currentFocusNode != null ) {
+//            String id = getNamedAttibute( _currentFocusNode, "id" );
+//            _navigationNamespace.setOldFocusedId( id );
+//
+//            // Disable BF focus
+//            if( _currentNodeFocused ) {
+//                _browserField.setFocus( _currentFocusNode, false );
+//                _currentNodeFocused = false;
+//            }
+//
+//            // Disable BF hover
+//            _browserField.setHover( _currentFocusNode, false );
+//
+//            // Create a synthetic mouseout Event
+//            fireMouseEvent( "mouseout", _currentFocusNode );
+//
+//            // Invalidate the area of old _currentFocusNode
+//            _widgetFieldManager.invalidateNode( _currentFocusNode );
+//
+//            _currentFocusNode = null;
+//            _navigationNamespace.setNewFocusedId( null );
+//        }
+//    }
 
     // Utility functions...
     
@@ -270,84 +259,96 @@ final public class NavigationController {
         return false;
     }
 
-    private static final String SUPPRESS_NAVIGATION_INPUT_TYPES = "|checkbox|radio|button|";
-    private static final String AUTO_FOCUS_INPUT_TYPES = "|color|date|month|time|week|email|number|password|search|text|url|";
-    private static final String REQUIRE_CLICK_INPUT_TYPES = "|file|";
+//    private static final String SUPPRESS_NAVIGATION_INPUT_TYPES = "|checkbox|radio|button|";
+//    private static final String AUTO_FOCUS_INPUT_TYPES = "|color|date|month|time|week|email|number|password|search|text|url|";
+//    private static final String REQUIRE_CLICK_INPUT_TYPES = "|file|";
 
-    private boolean isAutoFocus( Node node ) {
-        if( node instanceof HTMLInputElement ) {
-            String type = ( (HTMLInputElement) node ).getType();
-            return AUTO_FOCUS_INPUT_TYPES.indexOf( type ) > 0;
-        }
-        if( node instanceof HTMLSelectElement ) {
-			if ( DeviceInfo.isBlackBerry6() )
-        		// WebKit will autofocus the select element
-        		return false;
-        	else{
-        		HTMLSelectElement select = ( HTMLSelectElement ) node;
-        		return !select.getMultiple();
-        	}
-        }
-        return ( node instanceof HTMLTextAreaElement );
+//    private boolean isAutoFocus( Node node ) {
+//        if( node instanceof HTMLInputElement ) {
+//            String type = ( (HTMLInputElement) node ).getType();
+//            return AUTO_FOCUS_INPUT_TYPES.indexOf( type ) > 0;
+//        }
+//        if( node instanceof HTMLSelectElement ) {
+//			if ( DeviceInfo.isBlackBerry6() )
+//        		// WebKit will autofocus the select element
+//        		return false;
+//        	else{
+//        		HTMLSelectElement select = ( HTMLSelectElement ) node;
+//        		return !select.getMultiple();
+//        	}
+//        }
+//        return ( node instanceof HTMLTextAreaElement );
+//    }
+
+//    private boolean requiresNavigation( Node node ) {
+//        if( node instanceof HTMLInputElement ) {
+//            String type = ( (HTMLInputElement) node ).getType();
+//            return ( SUPPRESS_NAVIGATION_INPUT_TYPES.indexOf( type ) < 0 );
+//        } 
+//        if( node instanceof HTMLSelectElement )
+//            return true;
+//        if( node instanceof HTMLTextAreaElement )
+//            return true;
+//        if( node instanceof HTMLButtonElement )
+//            return true;
+//        return ( node instanceof HTMLObjectElement );
+//    }
+
+//    boolean fireMouseEvent( final String type, final Node node ) {
+//        if( node == null )
+//            return false;
+//        
+//        // if the JS triggered by this mouse event blocks this thread for too long, the browser will timeout/crash.
+//        // Dispatch it into another thread.
+//        new GenericDispatcherEvent() {
+//            protected void dispatch() {
+//                try {
+//                    DocumentEvent domEvent = (DocumentEvent) _dom;
+//                    Event mouseEvent = domEvent.createEvent( "MouseEvents" );
+//                    mouseEvent.initEvent( type, true, true );
+//                    ( (EventTarget) node ).dispatchEvent( mouseEvent );
+//                } catch( Exception e ) {
+//                }
+//            }
+//        }.Dispatch();
+//        
+//        return true;
+//    }
+
+//    boolean isValidFocusableNode( Node node ) {
+//        if( node == null )
+//            return false;
+//        XYRect nodeRect = _widgetFieldManager.getPosition( node );
+//        return !( nodeRect == null || nodeRect.width == 0 || nodeRect.height == 0 );
+//    }    
+//    
+//    /**
+//     * Determines if the current control is a special case that requires a click event in WebKit.
+//     * @param node <description>
+//     * @return <description>
+//     */
+//    boolean currentNodeRequiresClickInWebKit(){
+//    	if( _currentFocusNode == null ){
+//    		return false;
+//    	}    	
+//        if( DeviceInfo.isBlackBerry6() ){
+//            if( _currentFocusNode instanceof HTMLInputElement ){
+//                String type = ( ( HTMLInputElement ) _currentFocusNode ).getType();
+//                return REQUIRE_CLICK_INPUT_TYPES.indexOf( type ) > 0;
+//            }
+//        }        
+//        return false;
+//    }
+
+    void triggerNavigationDirection( int direction, int delta ) {
+        _navigationNamespace.triggerNavigationDirection( direction, delta );
     }
 
-    private boolean requiresNavigation( Node node ) {
-        if( node instanceof HTMLInputElement ) {
-            String type = ( (HTMLInputElement) node ).getType();
-            return ( SUPPRESS_NAVIGATION_INPUT_TYPES.indexOf( type ) < 0 );
-        } 
-        if( node instanceof HTMLSelectElement )
-            return true;
-        if( node instanceof HTMLTextAreaElement )
-            return true;
-        if( node instanceof HTMLButtonElement )
-            return true;
-        return ( node instanceof HTMLObjectElement );
+    void triggerNavigationMouseDown() {
+        _navigationNamespace.triggerNavigationMouseDown();
     }
 
-    boolean fireMouseEvent( final String type, final Node node ) {
-        if( node == null )
-            return false;
-        
-        // if the JS triggered by this mouse event blocks this thread for too long, the browser will timeout/crash.
-        // Dispatch it into another thread.
-        new GenericDispatcherEvent() {
-            protected void dispatch() {
-                try {
-                    DocumentEvent domEvent = (DocumentEvent) _dom;
-                    Event mouseEvent = domEvent.createEvent( "MouseEvents" );
-                    mouseEvent.initEvent( type, true, true );
-                    ( (EventTarget) node ).dispatchEvent( mouseEvent );
-                } catch( Exception e ) {
-                }
-            }
-        }.Dispatch();
-        
-        return true;
-    }
-
-    boolean isValidFocusableNode( Node node ) {
-        if( node == null )
-            return false;
-        XYRect nodeRect = _widgetFieldManager.getPosition( node );
-        return !( nodeRect == null || nodeRect.width == 0 || nodeRect.height == 0 );
-    }    
-    
-    /**
-     * Determines if the current control is a special case that requires a click event in WebKit.
-     * @param node <description>
-     * @return <description>
-     */
-    boolean currentNodeRequiresClickInWebKit(){
-    	if( _currentFocusNode == null ){
-    		return false;
-    	}    	
-        if( DeviceInfo.isBlackBerry6() ){
-            if( _currentFocusNode instanceof HTMLInputElement ){
-                String type = ( ( HTMLInputElement ) _currentFocusNode ).getType();
-                return REQUIRE_CLICK_INPUT_TYPES.indexOf( type ) > 0;
-            }
-        }        
-        return false;
+    void triggerNavigationMouseUp() {
+        _navigationNamespace.triggerNavigationMouseUp();
     }
 }
