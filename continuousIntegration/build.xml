@@ -1,0 +1,180 @@
+<project name="YUITest" basedir="." default="CheckReport">
+
+    <property file="test.properties"/>
+    <property environment="env" />
+    <property name="testDir" value="${basedir}/test"/>
+    <property name="resultFile" value="${basedir}/${product.version}.xml"/>
+    <property name="bbwp.dir" value="${env.BBWPFOLDER}"/>
+    <property name="6000Ctrl" value="6000Ctrl"/>
+    <property name="time.out" value="600000"/>
+    <property name="simpack.dir" value="${env.BBWPFOLDER}/simpack" />
+    <property name="simpack.first.instance.file" value="${simpack.dir}/first.txt" />
+    <property name="mds.dir" value="${env.BBWPFOLDER}/mds" />    
+    <property name="fledge.input.file" value="${basedir}/controllerscript.txt" />
+    <property name="fledge.output.file" value="${basedir}/output.txt" />
+    
+    <taskdef name="xmltask" classname="com.oopsconsultancy.xmltask.ant.XmlTask" classpath="lib/xmltask.jar"/>
+    <taskdef name="YUIConverterAntTask" classname="net.rim.snarf.yui.YUITestReportConverterAntTask" classpath="lib/YUIConverter.jar"/>
+
+    <target name="clean">     
+        <exec executable="cmd" dir="${simpack.dir}">
+            <arg value="/c"/>
+            <arg value="clean.bat"/>
+        </exec>
+        
+        <delete file="${testDir}/OTAInstall" quiet="true" />
+        <delete file="${testDir}/StandardInstall" quiet="true" />
+        <delete dir="${testDir}/${6000Ctrl}" quiet="true" includeemptydirs="true"/>
+        <delete dir="${testDir}" quiet="true" includeemptydirs="true"/>
+        <delete dir="report" quiet="true" />        
+        <delete file="${reportFile}" quiet="true" />
+        <mkdir dir="report"/>
+    </target>
+
+    <target name="runtest" depends="clean">
+        <antcall target="prepareArtifacts"/>
+        <antcall target="configProperties"/>
+        
+        <zip destfile="${testDir}/YUITest.zip" basedir="YUITest"/>
+        
+        <!-- Generate cod file for YUI Tests-->
+        <exec executable="cmd">
+            <arg value="/c"/>
+            <arg value="${bbwp.dir}/bbwp.exe"/>
+            <arg value="${testDir}/YUITest.zip"/>
+            <arg value="/o"/>
+            <arg value="${testDir}"/>
+        </exec>              
+        
+        <!-- Append exit commands to batch files for MDS and the simulator -->      
+        <replace file="${mds.dir}/run.bat" token="/v:on /k" value="/v:on /c" />
+        
+        <replace file="${basedir}/TDD_GO.bat" token="mds_dir" value="&quot;${mds.dir}&quot;"/>
+        <replace file="${basedir}/TDD_GO.bat" token="simpack_dir" value="&quot;${simpack.dir}&quot;"/>
+        <replace file="${basedir}/TDD_GO.bat" token="input_file" value="&quot;${fledge.input.file}&quot;"/>
+        <replace file="${basedir}/TDD_GO.bat" token="output_file" value="&quot;${fledge.output.file}&quot;"/>
+                
+        <copy file="${testDir}/StandardInstall/YUITest.cod" tofile="${simpack.dir}/YUITest.cod" overwrite="true"/>
+
+        <parallel>
+            <daemons>
+                <exec executable="${PythonCmd}" timeout="${time.out}">
+                    <arg value="${basedir}/server.py"/>
+                </exec>
+            </daemons>
+            <sequential>
+
+                <echo message="Sleeping for 5 s "/>
+                <sleep seconds="5"/> <!-- Give the python server a few seconds to start up -->
+
+                <tstamp>
+                    <format property="start.timestamp" pattern="yyyyMMddHHmmss" />
+                </tstamp>
+                <echo message="${start.timestamp}"/>
+
+                <exec executable="cmd" dir="${basedir}">
+                    <arg value="/c"/>
+                    <arg value="TDD_GO.bat"/>
+                </exec>
+
+                <tstamp>
+                    <format property="end.timestamp" pattern="yyyyMMddHHmm" />
+                </tstamp>
+                <echo message="${end.timestamp}"/>
+
+                <echo message="start waiting for result file"/>
+                <waitfor maxwait="${time.out}" maxwaitunit="millisecond">
+                    <available file="${resultFile}"/>
+                </waitfor>
+                <move file="${resultFile}" todir="${basedir}/report/"/>
+                <YUIConverterAntTask testReportPath="${basedir}/report/${product.version}.xml"/>
+                <mkdir dir="${basedir}/target/surefire-reports"/>
+                <move todir="${basedir}/target/surefire-reports">
+                    <fileset dir="report">
+                        <exclude name="${product.version}.xml"/>
+                    </fileset>
+                </move>
+                <echo message="done"/>
+            </sequential>
+        </parallel>
+        <exec executable="cmd" dir="${mds.dir}">
+            <arg value="/c"/>
+            <arg value="shutdown.bat"/>
+        </exec>
+        <exec executable="cmd">
+            <arg value="/c"/>
+            <arg value="taskkill"/>
+            <arg value="/im"/>
+            <arg value="fledge.exe"/>
+        </exec>
+        
+        <replace file="${mds.dir}/run.bat" token="/v:on /c" value="/v:on /k" />
+        
+        <replace file="${basedir}/TDD_GO.bat" token="&quot;${mds.dir}&quot;" value="mds_dir" />
+        <replace file="${basedir}/TDD_GO.bat" token="&quot;${simpack.dir}&quot;" value="simpack_dir" />
+        <replace file="${basedir}/TDD_GO.bat" token="&quot;${fledge.input.file}&quot;" value="input_file" />
+        <replace file="${basedir}/TDD_GO.bat" token="&quot;${fledge.output.file}&quot;" value="output_file"/>
+    </target>
+
+    <target name="prepareArtifacts">
+        <mkdir dir="${testDir}"/>
+    </target>
+    <target name="configProperties">
+        <hostinfo prefix="localhost" host="${env.COMPUTERNAME}"/>
+        <property name="PythonServerIP" value="${localhost.ADDR4}"/>
+    
+        <property name="url" value="http://${PythonServerIP}:${PythonServerPort}/yui/index.htm?hudson=true&amp;buildId=${product.version}"/>
+        <echo message="content url: ${url}"/>
+
+        <copy file="${basedir}/YUITest/config.xml_temp"
+              tofile="${basedir}/YUITest/config.xml" overwrite="true" >
+            <filterset>
+                <filter token="pythonServerIP" value="${PythonServerIP}"/>
+                <filter token="pythonServerPort" value="${PythonServerPort}"/>
+                <filter token="buildid" value="${product.version}"/>
+            </filterset>
+        </copy>
+        <copy file="${basedir}/YUITest/index.html_temp" tofile="${basedir}/YUITest/index.html" overwrite="true">
+            <filterset begintoken="@" endtoken="@">
+                <filter token="REFRESH_URL" value="${url}"/>
+            </filterset>
+        </copy>
+
+        <copy file="${basedir}/controllerscript.txt" tofile="${testDir}/controllerscript.txt" overwrite="true"/>
+
+        <copy file="${basedir}/yui/YUIHarness.js_temp" tofile="${basedir}/yui/YUIHarness.js" overwrite="true">
+            <filterset begintoken="@" endtoken="@">
+                <filter token="pythonServerIP" value="${PythonServerIP}"/>
+                <filter token="pythonServerPort" value="${PythonServerPort}"/>
+            </filterset>
+        </copy>
+
+        <copy file="${basedir}/server.py_temp" tofile="${basedir}/server.py" overwrite="true">
+            <filterset begintoken="@" endtoken="@">
+                <filter token="pythonServerIP" value="${PythonServerIP}"/>
+                <filter token="pythonServerPort" value="${PythonServerPort}"/>
+            </filterset>
+        </copy>
+    </target>
+    <target name="test">
+         <tstamp>
+                <format property="start.timestamp" pattern="yyyyMMddHHmm" />
+         </tstamp>
+         <echo message="${start.timestamp}"/>
+         <sleep seconds="5"/> <!-- Give the python server a few seconds to start up -->
+         <tstamp>
+                <format property="end.timestamp" pattern="yyyyMMddHHmm" />
+         </tstamp>
+         <echo message="${end.timestamp}"/>
+    </target>
+    
+    <target name="CheckReport" depends="runtest">
+        <xmlproperty file = "${basedir}/report/${product.version}.xml" prefix="report"/>
+        <fail message = "failure found in report">
+            <condition>
+                <matches pattern="[1-9]" string="${report.testsuites.testsuite(failures)}"/>
+            </condition>
+        </fail>
+    </target>
+    
+</project>

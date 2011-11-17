@@ -1,22 +1,21 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-   <modelVersion>4.0.0</modelVersion>
 
+   <modelVersion>4.0.0</modelVersion>
    <groupId>net.rim.webworks</groupId>
    <artifactId>webworks</artifactId>
    <version>2.3.0.0</version>
-   
    <packaging>pom</packaging>
-   
+
    <modules>
       <module>api</module>
       <module>archiver</module>
    </modules>
-   
+
    <properties>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
    </properties>
-   
+
    <dependencies>
       <dependency>
          <groupId>junit</groupId>
@@ -24,7 +23,35 @@
          <version>3.8.1</version>
          <scope>test</scope>
       </dependency>
-   </dependencies>
+   </dependencies>  
+
+   <profiles>
+        <profile>
+            <id>patch-installlation</id>
+            <activation>
+                <property>
+                    <name>patch</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <modules>
+                <module>patcher</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>run-yui-tests</id>
+            <activation>
+                <property>
+                    <name>run.yui.tests</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <modules>
+                <module>continuousIntegration</module>
+            </modules>
+        </profile>
+    </profiles>
+
    <build>
       <directory>${basedir}/target</directory>
       <plugins>         
@@ -51,8 +78,7 @@
                     </configuration>
                 </execution> 
             </executions>
-        </plugin>
-        
+        </plugin>        
       </plugins>
    </build>
 </project>

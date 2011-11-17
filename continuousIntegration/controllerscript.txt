@@ -1,0 +1,23 @@
+Pause(120)
+LoadCod("YUITest.cod.pending")
+Pause(7)
+LoadCod("update.force")
+Pause(7)
+TrackballPress
+TrackballRelease
+Pause(3)
+TrackballRoll(0, -3)
+Pause(3)
+TrackballPress
+TrackballRelease
+Pause(3)
+TrackballRoll(0, -4)
+Pause(3)
+TrackballRoll(0, -3)
+Pause(3)
+TrackballRoll(2, 0)
+Pause(3)
+TrackballPress
+TrackballRelease
+Pause(90)
+quit
