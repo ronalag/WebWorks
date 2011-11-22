@@ -44,7 +44,7 @@ public class SelectDialog extends PopupScreen implements FieldChangeListener {
     private ButtonField _doneButton;
     private VerticalFieldManager _vfm;
     private SelectListField _list;
-    
+
     private ListItem[] _listItems;
     private int[] _response = null;
 
@@ -57,7 +57,7 @@ public class SelectDialog extends PopupScreen implements FieldChangeListener {
         _choiceLength = labels.length;
         _allowMultiple = allowMultiple;
         _selectedIndex = -1;
-        
+
         _listItems = new ListItem[ _choiceLength ];
         int indexAssignment = 0;
         for( int index = 0; index < _choiceLength; index++ ) {
@@ -203,8 +203,8 @@ public class SelectDialog extends PopupScreen implements FieldChangeListener {
                 int selectedIndex = getSelectedIndex();
                 ListItem listItem = (ListItem) get( this, selectedIndex );
 
-                if( !listItem.isEnabled() || listItem.getType() == SelectAsyncFunction.POPUP_ITEM_TYPE_GROUP ||
-                        listItem.getType() == SelectAsyncFunction.POPUP_ITEM_TYPE_SEPARATOR ) {
+                if( !listItem.isEnabled() || listItem.getType() == SelectAsyncFunction.POPUP_ITEM_TYPE_GROUP
+                        || listItem.getType() == SelectAsyncFunction.POPUP_ITEM_TYPE_SEPARATOR ) {
                     return true;
                 }
 
@@ -233,16 +233,19 @@ public class SelectDialog extends PopupScreen implements FieldChangeListener {
 
         private void paintListItem( ListItem listItem, ListField listField, Graphics graphics, int index, int y, int width ) {
             String text = listItem.toString().trim();
-            
+
             int type = listItem.getType();
             Font font = graphics.getFont();
             final int checkboxSize = font.getHeight();
             final int textStart = PADDING + checkboxSize + 10;
-            
-            Bitmap checkWhite = GPATools.ResizeTransparentBitmap(Bitmap.getBitmapResource("chk-white.png"), checkboxSize, checkboxSize, Bitmap.FILTER_BOX, Bitmap.SCALE_TO_FILL);
-            Bitmap checkBlue = GPATools.ResizeTransparentBitmap(Bitmap.getBitmapResource("chk-blue.png"), checkboxSize, checkboxSize, Bitmap.FILTER_BILINEAR, Bitmap.SCALE_TO_FILL);
-            Bitmap boxEmpty = GPATools.ResizeTransparentBitmap(Bitmap.getBitmapResource("box-empty.png"), checkboxSize, checkboxSize, Bitmap.FILTER_BILINEAR, Bitmap.SCALE_TO_FILL);
-            
+
+            Bitmap checkWhite = GPATools.ResizeTransparentBitmap( Bitmap.getBitmapResource( "chk-white.png" ), checkboxSize,
+                    checkboxSize, Bitmap.FILTER_BOX, Bitmap.SCALE_TO_FILL );
+            Bitmap checkBlue = GPATools.ResizeTransparentBitmap( Bitmap.getBitmapResource( "chk-blue.png" ), checkboxSize,
+                    checkboxSize, Bitmap.FILTER_BILINEAR, Bitmap.SCALE_TO_FILL );
+            Bitmap boxEmpty = GPATools.ResizeTransparentBitmap( Bitmap.getBitmapResource( "box-empty.png" ), checkboxSize,
+                    checkboxSize, Bitmap.FILTER_BILINEAR, Bitmap.SCALE_TO_FILL );
+
             switch( type ) {
                 case SelectAsyncFunction.POPUP_ITEM_TYPE_SEPARATOR:
                     graphics.setColor( Color.GRAY );
@@ -253,14 +256,14 @@ public class SelectDialog extends PopupScreen implements FieldChangeListener {
                     graphics.setColor( Color.GRAY );
                     font = font.derive( Font.BOLD );
                     graphics.setFont( font );
-                    graphics.drawText( text, PADDING, y, DrawStyle.ELLIPSIS, width - PADDING ); //no fudge added to y coordinate
+                    graphics.drawText( text, PADDING, y, DrawStyle.ELLIPSIS, width - PADDING ); // no fudge added to y coordinate
                     break;
                 case SelectAsyncFunction.POPUP_ITEM_TYPE_OPTION:
                     boolean enabled = listItem.isEnabled();
                     if( !enabled ) {
                         graphics.setColor( Color.GRAY );
                     }
-                    
+
                     if( _allowMultiple ) {
                         graphics.drawBitmap( PADDING, y, checkboxSize, checkboxSize, boxEmpty, 0, 0 );
                     }
@@ -273,7 +276,8 @@ public class SelectDialog extends PopupScreen implements FieldChangeListener {
                         }
                     }
 
-                    graphics.drawText( text, textStart, y, DrawStyle.ELLIPSIS, width - textStart ); //no fudge added to y coordinate
+                    graphics.drawText( text, textStart, y, DrawStyle.ELLIPSIS, width - textStart ); // no fudge added to y
+                                                                                                    // coordinate
                     break;
                 default:
             }
