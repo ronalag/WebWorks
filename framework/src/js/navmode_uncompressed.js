@@ -48,6 +48,9 @@ navigationController = {
 
     /* Sets the top mose focusable item as selected on first load of the page */
     initialize : function(data) {
+        // Prepend 'x-blackberry-' in front of these <input> types to prevent browser from automatically displaying its UI on focus
+        navigationController.changeInputNodeTypes(["date", "month", "time", "datetime", "datetime-local"]);
+        
         // Initialize the scroll information
         navigationController.assignScrollData(data);
         navigationController.focusableNodes = navigationController.getFocusableElements();
@@ -94,6 +97,23 @@ navigationController = {
                 navigationController.setRimFocus(bounds);
             } else { // Get the top most node
                 navigationController.setRimFocus(navigationController.findHighestFocusableNodeInScreen());
+            }
+        }
+    },
+    
+    changeInputNodeTypes : function(inputTypes) {
+        var i, 
+            j,
+            focusableInputs = "input[x-blackberry-focusable=true]",
+            selector,
+            nodes;
+        
+        for(i = 0; i < inputTypes.length; i++) {
+            selector = focusableInputs + "[type=" + inputTypes[i] + "]";
+            nodes = document.querySelectorAll(selector);
+            
+            for(j = 0; j < nodes.length; j++) {
+                nodes[j].type = "x-blackberry-" + inputTypes[i];
             }
         }
     },
@@ -280,6 +300,43 @@ navigationController = {
             if(typeof(navigationController[focus.element.tagName] === "function")) {
                 navigationController[focus.element.tagName](focus.element);
             }
+        }
+    },
+    
+    INPUT : function(htmlElem) {
+        navigationController.onDATETIME = function(dateTime) {
+                                        var change = document.createEvent("HTMLEvents"),
+                                            fireChange = false;
+                                        
+                                        if(htmlElem.value !== dateTime) {
+                                            htmlElem.value = dateTime;
+                                            fireChange = true;
+                                        }
+                                        
+                                        if(fireChange) {
+                                            change.initEvent("change", true, true);
+                                            htmlElem.dispatchEvent(change);
+                                        }
+        };
+        
+        var type = htmlElem.attributes.getNamedItem("type").value;
+        switch(type) {
+            case "x-blackberry-date" : 
+            case "x-blackberry-datetime" : 
+            case "x-blackberry-datetime-local" : 
+            case "x-blackberry-month" : 
+            case "x-blackberry-time" : navigationController.handleInputDateTime(
+                    type.substring(type.lastIndexOf("-") + 1), 
+                    {
+                        value : htmlElem.value,
+                        min : htmlElem.min,
+                        max : htmlElem.max,
+                        step : htmlElem.step
+                    },
+                    "navigationController.onDATETIME"
+                );
+                break;
+            default: break; //no special handling
         }
     },
     
@@ -1287,7 +1344,7 @@ navigationController = {
     },
 
     scrollX : function(value) {
-        window.scrollTo(navigationController.unscaleValue(value), window.pageYOffset);
+        window.scrollTo(value, window.pageYOffset);
 
         // Below is some experimental smooth scrolling code
         /*var startX = 0;
@@ -1317,7 +1374,7 @@ navigationController = {
     },
 
     scrollY : function(value) {
-        window.scrollTo(window.pageXOffset, navigationController.unscaleValue(value));
+        window.scrollTo(window.pageXOffset, value);
 
         // Below is some experimental smooth scrolling code
         /*var startY = 0;
@@ -1363,7 +1420,7 @@ bbNav = {
             'height' : screen.height,
             'width' : screen.width
         };
-
+        
         blackberry.focus.onScroll = navigationController.onScroll;
         blackberry.focus.onTrackpadDown = navigationController.onTrackpadDown;
         blackberry.focus.onTrackpadUp = navigationController.onTrackpadUp;
@@ -1372,8 +1429,11 @@ bbNav = {
         blackberry.focus.getPriorFocus = navigationController.getPriorFocus;
         blackberry.focus.setFocus = navigationController.setFocus;
         blackberry.focus.focusOut = navigationController.focusOut;
+        
         navigationController.initialize(data);
+        
         navigationController.handleSelect = blackberry.ui.dialog.selectAsync;
+        navigationController.handleInputDateTime = blackberry.ui.dialog.dateTimeAsync;
     }
 }
 
