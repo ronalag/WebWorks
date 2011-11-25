@@ -30,8 +30,8 @@
 
 package blackberry.ui.dialog.nav.datetime;
 
-import java.util.*;
-import net.rim.device.api.i18n.*;
+import java.util.Calendar;
+import java.util.TimeZone;
 
 import blackberry.ui.dialog.nav.datetime.CalendarExtensions;
 
@@ -81,8 +81,7 @@ import blackberry.ui.dialog.nav.datetime.CalendarExtensions;
  * @see          Calendar
  * @see          TimeZone
  * @version      1.47
- * @author David Goldsmith, Mark Davis, Chen-Lieh Huang, Alan Liu    
-  * @category Signed
+ * @author David Goldsmith, Mark Davis, Chen-Lieh Huang, Alan Liu
  */
 public final class GregorianCalendar extends Calendar implements CalendarExtensions {
     /*
@@ -1054,9 +1053,11 @@ public final class GregorianCalendar extends Calendar implements CalendarExtensi
         if (calendar == null) {
             return "Thu Jan 01 00:00:00 UTC 1970";
         }
-        DateFormatSymbols dfs = DateFormatSymbols.getInstance();
-        String months[] = dfs.getShortMonths();
-        String days[] = dfs.getShortWeekdays(); 
+        
+        //Removed the dependency on DateTimeSymbols and hardcoded the english strings
+        //to remove dependency on spiderweb of internal classes
+        String months[] = new String[] { "Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec" };
+        String days[] = new String[] { "Mon", "Tues", "Wed", "Thur", "Fri", "Sat", "Sun" }; 
 
         int dow = calendar.get(Calendar.DAY_OF_WEEK);
         int month = calendar.get(Calendar.MONTH);
