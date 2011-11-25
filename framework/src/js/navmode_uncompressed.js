@@ -304,15 +304,15 @@ navigationController = {
     },
     
     INPUT : function(htmlElem) {
-        navigationController.onDATETIME = function(dateTime) {
+        navigationController.onInput = function(value) {
                                         var change = document.createEvent("HTMLEvents"),
                                             fireChange = false;
-                                        
-                                        if(htmlElem.value !== dateTime) {
-                                            htmlElem.value = dateTime;
+
+                                        if(htmlElem.value !== value) {
+                                            htmlElem.value = value;
                                             fireChange = true;
                                         }
-                                        
+
                                         if(fireChange) {
                                             change.initEvent("change", true, true);
                                             htmlElem.dispatchEvent(change);
@@ -334,6 +334,16 @@ navigationController = {
                         step : htmlElem.step
                     },
                     navigationController.onDATETIME
+                );
+                break;
+            case "color" :
+                var value = htmlElem.value;
+                if (value === "") {
+                    value = "000000";
+                }
+                navigationController.handleInputColor(
+                    value,
+                    navigationController.onInput
                 );
                 break;
             default: break; //no special handling
@@ -1434,6 +1444,7 @@ bbNav = {
         
         navigationController.handleSelect = blackberry.ui.dialog.selectAsync;
         navigationController.handleInputDateTime = blackberry.ui.dialog.dateTimeAsync;
+        navigationController.handleInputColor = blackberry.ui.dialog.colorPickerAsync;
     }
 }
 
