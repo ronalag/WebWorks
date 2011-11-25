@@ -16,12 +16,19 @@ import net.rim.device.api.script.ScriptableImpl;
 import blackberry.ui.dialog.nav.datetime.DateTimeDialog;
 import blackberry.ui.dialog.nav.IWebWorksDialog;
 import blackberry.ui.dialog.nav.select.SelectDialog;
+import blackberry.ui.dialog.nav.color.ColorPickerDialog;
 
 public class DialogRunnableFactory {
     
-    public static Runnable getDateTimeRunnable(String type, String value, String min, String max, ScriptableFunction callback, Object thiz) {
-        IWebWorksDialog d = new DateTimeDialog(type, value, min, max);
-        return new DialogRunnable(d, callback, thiz);
+    public static Runnable getDateTimeRunnable( String type, String value, String min, String max, ScriptableFunction callback,
+            Object thiz ) {
+        IWebWorksDialog d = new DateTimeDialog( type, value, min, max );
+        return new DialogRunnable( d, callback, thiz );
+    }
+
+    public static Runnable getColorPickerRunnable( int initialColor, ScriptableFunction callback, Object thiz ) {
+        ColorPickerDialog d = new ColorPickerDialog( initialColor );
+        return new DialogRunnable( d, callback, thiz );
     }
     
     public static Runnable getSelectRunnable(boolean allowMultiple, String[] labels, boolean[] enabled, boolean[] selected, int[] types, ScriptableFunction callback, Object thiz) {
@@ -30,7 +37,7 @@ public class DialogRunnableFactory {
     }
     
     private static class DialogRunnable implements Runnable {
-        private IWebWorksDialog _dialog;        
+        private IWebWorksDialog _dialog;
         private ScriptableFunction _callback;
         private Object _context;
             
@@ -44,7 +51,7 @@ public class DialogRunnableFactory {
          * @param context
          *            The context in which the callback executes (its "this" object)
          */
-        DialogRunnable(IWebWorksDialog dialog, ScriptableFunction callback, Object context) {
+        DialogRunnable( IWebWorksDialog dialog, ScriptableFunction callback, Object context ) {
             _dialog = dialog;
             _callback = callback;
             _context = context;
@@ -91,5 +98,3 @@ public class DialogRunnableFactory {
         }
     }
 }
-
-
