@@ -7,23 +7,24 @@
 
 package blackberry.ui.dialog.nav;
 
-import net.rim.device.api.script.Scriptable;
 import net.rim.device.api.script.ScriptableFunction;
-
-import blackberry.common.util.json4j.JSONObject;
-
-import blackberry.ui.dialog.nav.DateTimeDialog;
-import blackberry.ui.dialog.nav.IWebWorksDialog;
+import blackberry.ui.dialog.nav.color.ColorPickerDialog;
 
 public class DialogRunnableFactory {
     
-    public static Runnable getDateTimeRunnable(String type, String value, String min, String max, ScriptableFunction callback, Object thiz) {
-        IWebWorksDialog d = new DateTimeDialog(type, value, min, max);
-        return new DialogRunnable(d, callback, thiz);
+    public static Runnable getDateTimeRunnable( String type, String value, String min, String max, ScriptableFunction callback,
+            Object thiz ) {
+        IWebWorksDialog d = new DateTimeDialog( type, value, min, max );
+        return new DialogRunnable( d, callback, thiz );
+    }
+
+    public static Runnable getColorPickerRunnable( int initialColor, ScriptableFunction callback, Object thiz ) {
+        ColorPickerDialog d = new ColorPickerDialog( initialColor );
+        return new DialogRunnable( d, callback, thiz );
     }
     
     private static class DialogRunnable implements Runnable {
-        private IWebWorksDialog _dialog;        
+        private IWebWorksDialog _dialog;
         private ScriptableFunction _callback;
         private Object _context;
             
@@ -37,7 +38,7 @@ public class DialogRunnableFactory {
          * @param context
          *            The context in which the callback executes (its "this" object)
          */
-        DialogRunnable(IWebWorksDialog dialog, ScriptableFunction callback, Object context) {
+        DialogRunnable( IWebWorksDialog dialog, ScriptableFunction callback, Object context ) {
             _dialog = dialog;
             _callback = callback;
             _context = context;
@@ -49,14 +50,14 @@ public class DialogRunnableFactory {
          * 
          * @see java.lang.Runnable#run()
          */
-        public void run() { 
-            if(_dialog.show()) {
+        public void run() {
+            if( _dialog.show() ) {
                 final String retVal = _dialog.getSelectedValue();
-                
+
                 try {
-                    _callback.invoke(_context, new Object[] { retVal });
-                } catch (Exception e) {
-                    throw new RuntimeException("Invoke callback failed: " + e.getMessage());
+                    _callback.invoke( _context, new Object[] { retVal } );
+                } catch( Exception e ) {
+                    throw new RuntimeException( "Invoke callback failed: " + e.getMessage() );
                 }
             }
         }
