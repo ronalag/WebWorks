@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package blackberry.ui.dialog.nav;
+package blackberry.ui.dialog.nav.select;
 
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.Characters;
