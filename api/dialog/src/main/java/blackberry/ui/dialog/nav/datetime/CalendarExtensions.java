@@ -1,9 +1,5 @@
 package blackberry.ui.dialog.nav.datetime;
 
-
- /**
-  * @category Signed
-  */
 public interface CalendarExtensions
 {
 
