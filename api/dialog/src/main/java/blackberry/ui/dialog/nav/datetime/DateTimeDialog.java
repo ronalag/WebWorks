@@ -11,9 +11,9 @@ import java.util.Calendar;
 
 import net.rim.device.api.i18n.SimpleDateFormat;
 import net.rim.device.api.ui.picker.DateTimePicker;
-import net.rim.device.cldc.util.GregorianCalendar;
 
 import blackberry.ui.dialog.DateTimeAsyncFunction;
+import blackberry.ui.dialog.nav.datetime.GregorianCalendar;
 
 public class DateTimeDialog implements IWebWorksDialog {
 
