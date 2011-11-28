@@ -19,6 +19,7 @@ navigationController = {
     SAFE_MARGIN : 30,
     SUPPRESS_NAVIGATION_INPUT_TYPES : '|checkbox|radio|button|',
     AUTO_FOCUS_INPUT_TYPES : '|color|date|month|time|week|email|number|password|search|text|url|tel|',
+    SCROLLABLE_INPUT_TYPES : '|text|password|email|search|tel|number|url|',
     REQUIRE_CLICK_INPUT_TYPES : '|file|',
     querySelector : 'textarea:not([x-blackberry-focusable=false]),a:not([x-blackberry-focusable=false]),input:not([x-blackberry-focusable=false]),select:not([x-blackberry-focusable=false]),button:not([x-blackberry-focusable=false]),[x-blackberry-focusable=true]',
 
@@ -45,6 +46,7 @@ navigationController = {
     height : null,
     width : null,
     rangeNavigationOn : false,
+    lastCaretPosition : 0,
 
     /* Sets the top mose focusable item as selected on first load of the page */
     initialize : function(data) {
@@ -193,6 +195,17 @@ navigationController = {
         return navigationController.priorFocusedId;
     },
 
+    isScrollableElement : function(element) {
+        if (element.tagName == 'TEXTAREA') {
+            return true;
+        }
+        if (element.tagName == 'INPUT' && element.hasAttribute('type')) {
+            var type = element.getAttribute('type').toLowerCase();
+            return navigationController.SCROLLABLE_INPUT_TYPES.indexOf(type) > 0;
+        }
+        return false;
+    },
+    
     /* Handle scrolling the focus in the proper direction */
     onScroll : function(data) {
         navigationController.assignScrollData(data);
@@ -204,6 +217,19 @@ navigationController = {
         if (!navigationController.device.isBB5() || navigationController.domDirty) {
             navigationController.focusableNodes = navigationController.getFocusableElements();
             navigationController.domDirty = false;
+        }
+        
+        // Determine if browser handled the the event by checking the caret position
+        // If browser handled the event, just return 
+        if (navigationController.currentFocused) {
+            var element = navigationController.currentFocused.element;
+            if (navigationController.isScrollableElement(element)) {
+                var caretPos = element.selectionStart;
+                if (caretPos != navigationController.lastCaretPosition) {
+                    navigationController.lastCaretPosition = caretPos;
+                    return;
+                }
+            }
         }
 
         // Determine our direction and scroll
@@ -1042,9 +1068,14 @@ navigationController = {
              */
             bounds.element.addEventListener("mouseover", function(event) {
                 var length = navigationController.focusableNodes.length;
+                var element;
                 for (var i = 0 ; i < length; i++) {
                     if( this == navigationController.focusableNodes[i].element) {
                         navigationController.currentFocused = navigationController.focusableNodes[i];
+                        element = navigationController.currentFocused.element;
+                        if (navigationController.isScrollableElement(element)) {
+                            navigationController.lastCaretPosition = element.selectionStart;
+                        }
                     }
                 }
             }
@@ -1227,9 +1258,16 @@ navigationController = {
     isAutoFocus : function(node) {
 
         if (node.element.tagName == 'INPUT') {
-            var type = node.element.getAttribute('type').toLowerCase();
-            return navigationController.AUTO_FOCUS_INPUT_TYPES.indexOf(type) > 0;
+            if (node.element.hasAttribute('type')) {
+                var type = node.element.getAttribute('type').toLowerCase();
+                return navigationController.AUTO_FOCUS_INPUT_TYPES.indexOf(type) > 0;
+            }
         }
+        
+        if (node.element.tagName == 'TEXTAREA') {
+            return true;
+        }
+        
         /*
          * if( node instanceof HTMLSelectElement ) {
          *   if ( DeviceInfo.isBlackBerry6() ) // WebKit will autofocus the select element
