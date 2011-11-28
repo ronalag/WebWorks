@@ -92,6 +92,7 @@ public class ColorPickerDialog extends Field implements IWebWorksDialog {
 
     private String colorToString( int color ) throws IllegalArgumentException {
         StringBuffer sb = new StringBuffer( 7 );
+        sb.append( "#" );
         NumberUtilities.appendNumber( sb, color & 0x00FFFFFF, 16, 6 );
         return sb.toString();
     }
