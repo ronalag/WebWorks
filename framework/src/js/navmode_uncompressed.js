@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 (function() {
 navigationController = {
 
@@ -337,14 +336,16 @@ navigationController = {
                 );
                 break;
             case "color" :
-                var value = htmlElem.value;
-                if (value === "") {
-                    value = "000000";
-                }
-                navigationController.handleInputColor(
-                    value,
-                    navigationController.onInput
-                );
+	            if (navigationController.device.isBB5() || navigationController.device.isBB6()) {
+	                var value = htmlElem.value;
+	                if (value === "") {
+	                    value = "000000";
+	                }
+	                navigationController.handleInputColor(
+	                    value,
+	                    navigationController.onInput
+	                );
+            	}
                 break;
             default: break; //no special handling
         }

@@ -37,7 +37,7 @@ public class ColorPickerAsyncFunction extends ScriptableFunctionBase {
      * @see blackberry.core.ScriptableFunctionBase#execute(Object, Object[])
      */
     public Object execute( Object thiz, Object[] args ) throws Exception {
-        int initialColor = Integer.parseInt( (String) args[ 0 ], HEX_BASE );
+        int initialColor = stringToColor( (String) args[ 0 ] );
         ScriptableFunction callback = (ScriptableFunction) args[ 1 ];
 
         // create dialog
@@ -48,6 +48,13 @@ public class ColorPickerAsyncFunction extends ScriptableFunctionBase {
 
         // return value
         return Scriptable.UNDEFINED;
+    }
+    
+    private int stringToColor(String color) {
+        if ( color.startsWith( "#" ) ) {
+            return Integer.parseInt( color.substring( 1 ), HEX_BASE );
+        }
+        return Integer.parseInt( color, HEX_BASE );
     }
 
     /**
