@@ -9,5 +9,5 @@ package blackberry.ui.dialog.nav;
 
 public interface IWebWorksDialog {
     boolean show();
-    String getSelectedValue();
+    Object getSelectedValue();
 }

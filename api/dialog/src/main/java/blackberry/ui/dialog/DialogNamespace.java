@@ -48,12 +48,12 @@ public class DialogNamespace extends Scriptable {
     /**
      * Constructs a DialogNamespace object.
      */
-    public DialogNamespace(ScriptEngine se) {
+    public DialogNamespace() {
         _fields = new Hashtable();
 
         _fields.put( StandardAskFunction.NAME, new StandardAskFunction() );
         _fields.put( CustomAskFunction.NAME, new CustomAskFunction() );
-        _fields.put( SelectAsyncFunction.NAME, new SelectAsyncFunction(se) );
+        _fields.put( SelectAsyncFunction.NAME, new SelectAsyncFunction() );
         _fields.put( DateTimeAsyncFunction.NAME, new DateTimeAsyncFunction() );
         _fields.put( D_OK, new Integer( Dialog.D_OK ) );
         _fields.put( D_SAVE, new Integer( Dialog.D_SAVE ) );

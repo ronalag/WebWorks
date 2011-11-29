@@ -1,19 +1,30 @@
 /*
- * DateTimeDialog.java
+ * Copyright 2010-2011 Research In Motion Limited.
  *
- * Research In Motion Limited proprietary and confidential
- * Copyright Research In Motion Limited, 2011-2011
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
-package blackberry.ui.dialog.nav;
+ 
+package blackberry.ui.dialog.nav.datetime;
 
 import java.util.Calendar;
+import java.util.Date;
 
 import net.rim.device.api.i18n.SimpleDateFormat;
 import net.rim.device.api.ui.picker.DateTimePicker;
 
 import blackberry.ui.dialog.DateTimeAsyncFunction;
-import blackberry.ui.dialog.nav.datetime.GregorianCalendar;
+import blackberry.ui.dialog.nav.IWebWorksDialog;
+import blackberry.ui.dialog.nav.datetime.DateTimeDialog;
 
 public class DateTimeDialog implements IWebWorksDialog {
 
@@ -50,7 +61,7 @@ public class DateTimeDialog implements IWebWorksDialog {
         return _dateTimePicker.doModal();
     }
     
-    public String getSelectedValue() {
+    public Object getSelectedValue() {
         SimpleDateFormat sdf = new SimpleDateFormat( _HTML5Calendar.getFormat().toString() );
         StringBuffer sb = sdf.format( _dateTimePicker.getDateTime(), new StringBuffer(16), null );
         
@@ -141,6 +152,8 @@ public class DateTimeDialog implements IWebWorksDialog {
     }
     
     public class HTML5Date extends Html5DateTimeObject {
+        private final int MONTH_LENGTH[] = {31,28,31,30,31,30,31,31,30,31,30,31};
+        private final int LEAP_MONTH_LENGTH[] = {31,29,31,30,31,30,31,31,30,31,30,31};
         
         public HTML5Date( String value ) {
             if ( value != null && value.length() != 0 ) {
@@ -197,8 +210,23 @@ public class DateTimeDialog implements IWebWorksDialog {
                 if ( day < 1 || day > 31 ) { throw new IllegalArgumentException(); }
                 
                 //combine month and day
-                calendar.set( Calendar.DAY_OF_MONTH, 0 );
-                ((GregorianCalendar) calendar).roll( Calendar.DAY_OF_MONTH, day );
+                //calendar.set( Calendar.DAY_OF_MONTH, 0 );
+                //((GregorianCalendar) calendar).roll( Calendar.DAY_OF_MONTH, day );
+                
+                int mth = calendar.get(Calendar.MONTH);
+                System.out.println(Calendar.OCTOBER);
+                
+                int min = 0;
+                int max = monthLength(mth, calendar.get(Calendar.YEAR));
+                // These are the standard roll instructions.  These work for all
+                // simple cases, that is, cases in which the limits are fixed, such
+                // as the hour, the month, and the era.
+                int gap = max - min + 1;
+                int value = (day - min) % gap;
+                if (value < 0) value += gap;
+                value += min;
+                
+                calendar.set( Calendar.DAY_OF_MONTH, value );
                 
                 _format.append("-dd");
                 return calendar;
@@ -206,6 +234,14 @@ public class DateTimeDialog implements IWebWorksDialog {
                 _format = null;
                 return null;
             }
+        }
+        
+        private final int monthLength(int month, int year) {
+            return isLeapYear(year) ? LEAP_MONTH_LENGTH[month] : MONTH_LENGTH[month];
+        }
+        
+        private boolean isLeapYear(int year) {
+            return ((year%4 == 0) && ((year%100 != 0) || (year%400 == 0)));
         }
     }
     
@@ -460,9 +496,12 @@ public class DateTimeDialog implements IWebWorksDialog {
                         hour = timeShift.get( Calendar.HOUR_OF_DAY ) * -1;
                         minute = timeShift.get( Calendar.MINUTE ) * -1;
                     }
-    
-                    ((GregorianCalendar) calendar).add( Calendar.HOUR_OF_DAY, hour );
-                    ((GregorianCalendar) calendar).add( Calendar.MINUTE, minute );
+                    
+                    long currentTime = calendar.getTime().getTime();
+                    long adjustedTime = currentTime + (hour * 60 * 60 * 1000 + minute * 60 * 1000);
+                    
+                    calendar.setTime(new Date(adjustedTime));
+                    
                     return calendar;
                 }
             } catch (IllegalArgumentException e) {

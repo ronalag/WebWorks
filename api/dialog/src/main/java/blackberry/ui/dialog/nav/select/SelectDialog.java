@@ -15,6 +15,8 @@
  */
 package blackberry.ui.dialog.nav.select;
 
+import java.util.Vector;
+
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.Characters;
 import net.rim.device.api.system.Display;
@@ -26,6 +28,7 @@ import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.TouchEvent;
 import net.rim.device.api.ui.TouchGesture;
+import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.component.ButtonField;
 import net.rim.device.api.ui.component.ListField;
 import net.rim.device.api.ui.component.ListFieldCallback;
@@ -34,6 +37,7 @@ import net.rim.device.api.ui.container.PopupScreen;
 import net.rim.device.api.ui.container.VerticalFieldManager;
 
 import blackberry.ui.dialog.SelectAsyncFunction;
+import blackberry.ui.dialog.nav.IWebWorksDialog;
 
 /**
  * Implementation of selection dialog
@@ -41,24 +45,28 @@ import blackberry.ui.dialog.SelectAsyncFunction;
  * @author jachoi
  * 
  */
-public class SelectDialog extends PopupScreen implements FieldChangeListener {
+public class SelectDialog extends PopupScreen implements FieldChangeListener, IWebWorksDialog {
 
     private ButtonField _doneButton;
     private VerticalFieldManager _vfm;
     private SelectListField _list;
 
     private ListItem[] _listItems;
-    private int[] _response = null;
+    private Vector _response;
 
     private int _choiceLength;
     private boolean _allowMultiple;
     private int _selectedIndex;
+    
+    private boolean _dialogAccepted;
 
     public SelectDialog( boolean allowMultiple, String[] labels, boolean[] enableds, boolean[] selecteds, int[] types ) {
         super( new PopupDelegate( allowMultiple ) );
         _choiceLength = labels.length;
         _allowMultiple = allowMultiple;
+        _response = new Vector();
         _selectedIndex = -1;
+        _dialogAccepted = false;
 
         _listItems = new ListItem[ _choiceLength ];
         int indexAssignment = 0;
@@ -89,30 +97,29 @@ public class SelectDialog extends PopupScreen implements FieldChangeListener {
             add( _doneButton );
         }
     }
+    
+    public boolean show() {
+        UiApplication.getUiApplication().pushModalScreen( this );
+        return _dialogAccepted;
+    }
+    
+    private void close(boolean changeAccepted) {
+        _dialogAccepted = changeAccepted;
+        super.close();
+    }
 
-    public int[] getResponse() {
+    public Object getSelectedValue() {
         return _response;
     }
 
     public void fieldChanged( Field field, int arg1 ) {
-        int counter = 0;
-
         for( int index = 0; index < _listItems.length; index++ ) {
             if( _listItems[ index ].isSelected() ) {
-                counter++;
+                _response.addElement(new Integer(_listItems[ index ].getIndex()));
             }
         }
-        int[] response = new int[ counter ];
-        int responseIndex = 0;
-        for( int index = 0; index < _listItems.length; index++ ) {
-            if( _listItems[ index ].isSelected() ) {
-                response[ responseIndex ] = _listItems[ index ].getIndex();
-                responseIndex++;
-            }
-        }
-        _response = response;
 
-        close();
+        close(true);
     }
 
     private void updateCurrentSelection( char keyChar ) {
@@ -176,7 +183,7 @@ public class SelectDialog extends PopupScreen implements FieldChangeListener {
                 }
                 return true;
             case Characters.ESCAPE:
-                close();
+                close(false);
                 return true;
             default:
                 updateCurrentSelection( c );
