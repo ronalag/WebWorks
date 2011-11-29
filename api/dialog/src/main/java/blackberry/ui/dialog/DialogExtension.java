@@ -46,7 +46,7 @@ public class DialogExtension implements WidgetExtension {
             throws Exception {
         
         if( feature.equals( FEATURE_DIALOG ) ) {
-            scriptengine.addExtension( feature, new DialogNamespace(scriptengine) );
+            scriptengine.addExtension( feature, new DialogNamespace() );
         }
     }
 

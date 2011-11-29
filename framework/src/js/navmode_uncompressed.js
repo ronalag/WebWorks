@@ -333,7 +333,7 @@ navigationController = {
                         max : htmlElem.max,
                         step : htmlElem.step
                     },
-                    "navigationController.onDATETIME"
+                    navigationController.onDATETIME
                 );
                 break;
             default: break; //no special handling
@@ -415,7 +415,7 @@ navigationController = {
         navigationController.handleSelect(
             typeof(htmlElem.attributes.multiple) !== "undefined" ? true : false, 
             getSelectChoices(htmlElem),
-            "navigationController.onSELECT"
+            navigationController.onSELECT
         );
     },
 
