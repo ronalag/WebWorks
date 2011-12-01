@@ -60,7 +60,7 @@ public class SelectAsyncFunction extends ScriptableFunctionBase {
         
         // queue
         UiApplication.getUiApplication().invokeLater(dr);
-
+        
         // return value
         return Scriptable.UNDEFINED;
     }

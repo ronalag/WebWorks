@@ -10,10 +10,10 @@ package blackberry.ui.dialog.nav;
 import java.util.Vector;
 
 import net.rim.device.api.script.Scriptable;
-import net.rim.device.api.script.ScriptableImpl;
 import net.rim.device.api.script.ScriptableFunction;
 
-import blackberry.common.util.json4j.JSONObject;
+import blackberry.core.ApplicationEventHandler;
+import blackberry.core.EventService;
 
 import blackberry.ui.dialog.nav.datetime.DateTimeDialog;
 import blackberry.ui.dialog.nav.IWebWorksDialog;
@@ -61,32 +61,49 @@ public class DialogRunnableFactory {
         public void run() { 
             if(_dialog.show()) {
                 Object dialogValue = _dialog.getSelectedValue();
-                final Object retVal;
+                final Object[] cbArgs;
                 
                 //we'll accept Vector-type dialog return values for arrays
                 //otherwise get object's string as all ecma primitives will return a valid string representation of themselves
                 if (dialogValue instanceof Vector) {
-                    retVal = vectorToScriptable((Vector)dialogValue);
+                    Vector v = (Vector)dialogValue;
+                    Object[] retVal = new Object[v.size()];
+                    v.copyInto(retVal);
+                    cbArgs = new Object[] { retVal };
                 } else {
-                    retVal = dialogValue.toString();
+                    cbArgs = new Object[] { dialogValue.toString() };
                 }
                 
-                try {
-                    _callback.invoke(_context, new Object[] { retVal });
-                } catch (Exception e) {
-                    throw new RuntimeException("Invoke callback failed: " + e.getMessage());
-                }
+                ThreadSafeCallback tscb = new ThreadSafeCallback(_callback);
+                EventService.getInstance().addHandler( 103, tscb);
+                EventService.getInstance().fireEvent(103, cbArgs, true);
+                EventService.getInstance().removeHandler(103, tscb);
             }
         }
+    }
+    
+    private static class ThreadSafeCallback implements ApplicationEventHandler {
+        final ScriptableFunction _cb;
         
-        private Scriptable vectorToScriptable(Vector vec) {
-            ScriptableImpl s = new ScriptableImpl();
-            
-            for(int i = 0; i < vec.size(); i++) {
-                s.putElement(i, vec.elementAt(i));
+        ThreadSafeCallback(ScriptableFunction callback) {
+            _cb = callback;
+        }
+        
+        public boolean handlePreEvent( int eventID, Object[] args ) {
+             try {
+                _cb.invoke(null, args);
+            } catch (Exception e) {
+                throw new RuntimeException("Invoke callback failed: " + e.getMessage());
             }
-            
-            return s;
+            return true;
+        }
+
+        public void handleEvent( int eventID, Object[] args ) {
+             try {
+                _cb.invoke(null, args);
+            } catch (Exception e) {
+                throw new RuntimeException("Invoke callback failed: " + e.getMessage());
+            }
         }
     }
 }
