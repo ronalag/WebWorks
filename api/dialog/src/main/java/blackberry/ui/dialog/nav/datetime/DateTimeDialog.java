@@ -22,9 +22,7 @@ import java.util.Date;
 import net.rim.device.api.i18n.SimpleDateFormat;
 import net.rim.device.api.ui.picker.DateTimePicker;
 
-import blackberry.ui.dialog.DateTimeAsyncFunction;
 import blackberry.ui.dialog.nav.IWebWorksDialog;
-import blackberry.ui.dialog.nav.datetime.DateTimeDialog;
 
 public class DateTimeDialog implements IWebWorksDialog {
 
