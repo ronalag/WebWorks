@@ -44,6 +44,7 @@ navigationController = {
     horizontalScroll : null,
     height : null,
     width : null,
+    rangeNavigationOn : false,
 
     /* Sets the top mose focusable item as selected on first load of the page */
     initialize : function(data) {
@@ -283,6 +284,9 @@ navigationController = {
         if (!navigationController.currentFocused) {
             return;
         }
+        if (navigationController.isRangeControl(navigationController.currentFocused.element)) {
+            navigationController.rangeNavigationOn = !navigationController.rangeNavigationOn;
+        }
         
         var focus = navigationController.currentFocused,     //Closure the current focus
             click = document.createEvent("MouseEvents"),
@@ -499,61 +503,99 @@ navigationController = {
             navigationController.scrollUp();
         }
     },
+	
+    //determines whether an input control is of the "range" type
+    isRangeControl : function(inputControl) {
+        if (inputControl.type == "range") {
+            return true;
+        }
+        return false;
+    },
 
+    //Support function for handling the slider movement of the range input control in navigation mode	
+    handleRangeSliderMovement : function(direction) {
+        var currentNode = navigationController.currentFocused.element; 	
+        var currentValue = currentNode.value;	
+        switch (direction) {
+            case 'r': //scroll right, increment position				
+                if (currentValue < currentNode.clientWidth) {
+                    currentNode.value ++;
+                }	
+                break;
+            case 'l': //scroll left, decrement position
+                if (currentValue > 1) {
+                    currentNode.value --;
+                }
+                break;
+            default:
+                console.log("Impossible");			
+            } 
+        }, 
+	
     // Support function for scrolling right
     handleDirectionRight : function() {
-        var screenRect = navigationController.getUnscaledScreenRect();
-        var node = navigationController.findRightFocusableNode();
-        if (node != null) {
-            var nodeRect = node.rect;
-            if (nodeRect.x <= (screenRect.x + screenRect.width /* + navigationController.SAFE_MARGIN */)) {
-                navigationController.setRimFocus(node);
-                return;
-            }
-        }
-        // Only scroll down the screen when there is more content to the right.
-        var screenHorizontalDelta = navigationController.unscaleValue(navigationController.virtualWidth) - screenRect.x
-                - screenRect.width;
-        if (screenHorizontalDelta > navigationController.SAFE_MARGIN) {
-            screenHorizontalDelta = navigationController.SAFE_MARGIN;
-        }
-        if (screenHorizontalDelta > 0) {
-            if (navigationController.currentFocused != null) {
-                // If current focused node is out of screen, focus out.
-                var currentNodeRect = navigationController.currentFocused.rect;
-                if (currentNodeRect.x + currentNodeRect.width <= screenRect.x + screenHorizontalDelta) {
-                    navigationController.focusOut();
+        var currentNode = navigationController.currentFocused.element; 
+        if (navigationController.isRangeControl(currentNode) && navigationController.rangeNavigationOn) {
+            navigationController.handleRangeSliderMovement('r');
+        } else { //we are not on a range control in navigation mode
+            var screenRect = navigationController.getUnscaledScreenRect();
+            var node = navigationController.findRightFocusableNode();
+            if (node != null) {
+                var nodeRect = node.rect;
+                if (nodeRect.x <= (screenRect.x + screenRect.width /* + navigationController.SAFE_MARGIN */)) {
+                    navigationController.setRimFocus(node);
+                    return;
                 }
             }
-            navigationController.scrollRight();
+            // Only scroll down the screen when there is more content to the right.
+            var screenHorizontalDelta = navigationController.unscaleValue(navigationController.virtualWidth) - screenRect.x
+                - screenRect.width;
+            if (screenHorizontalDelta > navigationController.SAFE_MARGIN) {
+                screenHorizontalDelta = navigationController.SAFE_MARGIN;
+            }
+            if (screenHorizontalDelta > 0) {
+                if (navigationController.currentFocused != null) {
+                    // If current focused node is out of screen, focus out.
+                    var currentNodeRect = navigationController.currentFocused.rect;
+                    if (currentNodeRect.x + currentNodeRect.width <= screenRect.x + screenHorizontalDelta) {
+                        navigationController.focusOut();
+                    }
+                }
+                navigationController.scrollRight();
+            }
         }
     },
 
     /* Support function for scrolling left */
     handleDirectionLeft : function() {
-        var screenRect = navigationController.getUnscaledScreenRect();
-        var node = navigationController.findLeftFocusableNode();
-        if (node != null) {
-            var nodeRect = node.rect;
-            if ((nodeRect.x + nodeRect.width) > (screenRect.x /* - navigationController.SAFE_MARGIN */)) {
-                navigationController.setRimFocus(node);
+        var currentNode = navigationController.currentFocused.element; 
+        if (navigationController.isRangeControl(currentNode) && navigationController.rangeNavigationOn) {
+            navigationController.handleRangeSliderMovement('l');
+        } else { //we are not on a range control in navigation mode
+            var screenRect = navigationController.getUnscaledScreenRect();
+            var node = navigationController.findLeftFocusableNode();
+            if (node != null) {
+                var nodeRect = node.rect;
+                if ((nodeRect.x + nodeRect.width) > (screenRect.x /* - navigationController.SAFE_MARGIN */)) {
+                    navigationController.setRimFocus(node);
                 return;
-            }
-        }
-        // Only scroll down the screen when there is more content to the left.
-        var screenHorizontalDelta = screenRect.x;
-        if (screenHorizontalDelta > navigationController.SAFE_MARGIN) {
-            screenHorizontalDelta = navigationController.SAFE_MARGIN;
-        }
-        if (screenHorizontalDelta > 0) {
-            if (navigationController.currentFocused != null) {
-                // If current focused node is out of screen, focus out.
-                var currentNodeRect = navigationController.currentFocused.rect;
-                if (currentNodeRect.x > screenRect.x - screenHorizontalDelta + screenRect.width) {
-                    navigationController.focusOut();
                 }
             }
-            navigationController.scrollLeft();
+            // Only scroll down the screen when there is more content to the left.
+            var screenHorizontalDelta = screenRect.x;
+            if (screenHorizontalDelta > navigationController.SAFE_MARGIN) {
+                screenHorizontalDelta = navigationController.SAFE_MARGIN;
+            }
+            if (screenHorizontalDelta > 0) {
+                if (navigationController.currentFocused != null) {
+                    // If current focused node is out of screen, focus out.
+                    var currentNodeRect = navigationController.currentFocused.rect;
+                    if (currentNodeRect.x > screenRect.x - screenHorizontalDelta + screenRect.width) {
+                        navigationController.focusOut();
+                    }
+                }
+                navigationController.scrollLeft();
+            }
         }
     },
 
