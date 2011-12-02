@@ -55,7 +55,7 @@ public class SelectDialog extends PopupScreen implements FieldChangeListener {
     private int _selectedIndex;
 
     public SelectDialog( boolean allowMultiple, String[] labels, boolean[] enableds, boolean[] selecteds, int[] types ) {
-        super( new PopupDelegate( allowMultiple ) );
+        super( new VerticalFieldManager( VERTICAL_SCROLL | VERTICAL_SCROLLBAR ) );
         _choiceLength = labels.length;
         _allowMultiple = allowMultiple;
         _selectedIndex = -1;
@@ -238,7 +238,7 @@ public class SelectDialog extends PopupScreen implements FieldChangeListener {
 
             int type = listItem.getType();
             Font font = graphics.getFont();
-            final int checkboxSize = font.getHeight();
+            final int checkboxSize = font.getHeight() - 6;
             final int textStart = PADDING + checkboxSize + 10;
 
             Bitmap checkWhite = GPATools.ResizeTransparentBitmap( Bitmap.getBitmapResource( "chk-white.png" ), checkboxSize,
@@ -267,14 +267,14 @@ public class SelectDialog extends PopupScreen implements FieldChangeListener {
                     }
 
                     if( _allowMultiple ) {
-                        graphics.drawBitmap( PADDING, y, checkboxSize, checkboxSize, boxEmpty, 0, 0 );
+                        graphics.drawBitmap( PADDING, y + 3, checkboxSize, checkboxSize, boxEmpty, 0, 0 );
                     }
 
                     if( listItem.isSelected() ) {
                         if( _allowMultiple ) {
-                            graphics.drawBitmap( PADDING, y, checkboxSize, checkboxSize, checkBlue, 0, 0 );
+                            graphics.drawBitmap( PADDING, y + 3, checkboxSize, checkboxSize, checkBlue, 0, 0 );
                         } else {
-                            graphics.drawBitmap( PADDING, y, checkboxSize, checkboxSize, checkWhite, 0, 0 );
+                            graphics.drawBitmap( PADDING, y + 3, checkboxSize, checkboxSize, checkWhite, 0, 0 );
                         }
                     }
 
@@ -340,69 +340,5 @@ public class SelectDialog extends PopupScreen implements FieldChangeListener {
         public int getIndex() {
             return _index;
         }
-    }
-
-    /*
-     * Handle the popup dialog layout.
-     */
-    private static class PopupDelegate extends VerticalFieldManager {
-        boolean _multiple;
-
-        PopupDelegate( boolean allowMultiple ) {
-            super( NO_VERTICAL_SCROLL | NO_VERTICAL_SCROLLBAR );
-            _multiple = allowMultiple;
-        }
-
-        protected void sublayout( int maxWidth, int maxHeight ) {
-            int yPosition = 0;
-            int heightAvailable = maxHeight;
-            Field field = getField( 0 );
-            int numFields = getFieldCount();
-
-            // Layout the vertical field manager that contains the listField
-            layoutChild( field, maxWidth, heightAvailable );
-            setPositionChild( field, 0, 0 );
-
-            boolean heightCheck; // Done button may not fit properly because of the font size and we need to take its height into
-                                 // account
-            if( _multiple ) {
-                Field button = getField( numFields - 1 );
-                layoutChild( button, maxWidth, heightAvailable );
-                heightCheck = field.getHeight() < heightAvailable - 6 - button.getHeight(); // 6 is for VSF height + SF height
-            } else {
-                heightCheck = field.getHeight() < heightAvailable;
-            }
-
-            if( heightCheck ) {
-                // manager is taking less space then the total space available.
-                // so call super which takes care of adjusting the popupscreen height
-                super.sublayout( maxWidth, maxHeight );
-            } else {
-                // start laying out fields in reverse order so that the remaining
-                // height can be given to the listField container.
-                for( int index = numFields - 1; index >= 0; index-- ) {
-                    field = getField( index );
-                    if( field instanceof VerticalFieldManager ) {
-                        break;
-                    } else {
-                        layoutChild( field, maxWidth, heightAvailable );
-                        yPosition += field.getHeight();
-                        // Center the Done button
-                        if( field.isStyle( Field.FIELD_HCENTER ) ) {
-                            setPositionChild( field, ( maxWidth - field.getWidth() + 1 ) >> 1, maxHeight - yPosition );
-                        } else {
-                            setPositionChild( field, 0, maxHeight - yPosition );
-                        }
-                        heightAvailable -= field.getHeight();
-                    }
-                }
-
-                // Layout listField container with remaining height
-                layoutChild( field, maxWidth, heightAvailable );
-
-                setVirtualExtent( maxWidth, maxHeight );
-                setExtent( maxWidth, maxHeight );
-            } // else
-        } // sublayout
     }
 }
