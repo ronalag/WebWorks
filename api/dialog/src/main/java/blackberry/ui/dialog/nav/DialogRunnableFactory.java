@@ -9,6 +9,7 @@ package blackberry.ui.dialog.nav;
 
 import java.util.Vector;
 
+import net.rim.device.api.system.DeviceInfo;
 import net.rim.device.api.script.ScriptableFunction;
 import net.rim.device.api.script.ScriptableImpl;
 
@@ -60,24 +61,28 @@ public class DialogRunnableFactory {
                 Object dialogValue = _dialog.getSelectedValue();
                 Object retVal;
                 
+                boolean isFive = "5".equals(DeviceInfo.getSoftwareVersion().substring(0, 1));
+                
                 //we'll accept Vector-type dialog return values for arrays
                 //otherwise get object's string as all ecma primitives will return a valid string representation of themselves
                 try {
-                if (dialogValue instanceof Vector) {
+                    if (dialogValue instanceof Vector) {
                         Vector v = (Vector)dialogValue;
-                        ScriptableImpl s = new ScriptableImpl();
-                        for(int i = 0; i < v.size(); i++) {
-                            s.putElement(i, v.elementAt(i));
+                        if(isFive) {
+                            ScriptableImpl s = new ScriptableImpl();
+                            for(int i = 0; i < v.size(); i++) {
+                                s.putElement(i, v.elementAt(i));
+                            }
+                            retVal = s;
+                        } else {
+                            Object[] s = new Object[v.size()];
+                            v.copyInto(s);
+                            retVal = s;
                         }
-                        retVal = s;
                     } else {
                         retVal = dialogValue.toString();
                     }
-                } catch (Exception e) {
-                    throw new RuntimeException("Invoke callback failed: " + e.getMessage());
-                }
-                
-                try {
+                    
                     _callback.invoke(null, new Object[] { retVal });
                 } catch (Exception e) {
                     throw new RuntimeException("Invoke callback failed: " + e.getMessage());
