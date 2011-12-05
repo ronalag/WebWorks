@@ -43,6 +43,7 @@ public final class BBMPlatformNamespace extends Scriptable {
 
     public static final String FUNC_REGISTER =                "register";
     public static final String FUNC_REQUEST_USER_PERMISSION = "requestUserPermission";
+    public static final String FUNC_SHOW_OPTIONS =            "showBBMAppOptions";
     public static final String FIELD_ENVIRONMENT =            "environment";
     public static final String EVENT_ON_APP_INVOKED =         "onappinvoked";
     public static final String EVENT_ON_ACCESS_CHANGED =      "onaccesschanged";
@@ -99,6 +100,8 @@ public final class BBMPlatformNamespace extends Scriptable {
             return new RegisterFunction();
         } else if(name.equals(BBMPlatformNamespace.FUNC_REQUEST_USER_PERMISSION)) {
             return new RequestUserPermissionFunction();
+        } else if(name.equals(BBMPlatformNamespace.FUNC_SHOW_OPTIONS)) {
+            return new ShowOptionsFunction();
         } else if(name.equals(SelfNamespace.NAME)) {
             return SelfNamespace.getInstance();
         } else if(name.equals(UsersNamespace.NAME)) {
@@ -196,4 +199,33 @@ public final class BBMPlatformNamespace extends Scriptable {
             };
         }
     } // RequestUserPermissionFunction
+    
+    private class ShowOptionsFunction extends ScriptableFunctionBase {
+        
+        protected Object execute(Object thiz, Object[] args) throws Exception {
+            
+            final ScriptableFunction onComplete = (ScriptableFunction) args[0];
+            
+            UiApplication.getUiApplication().invokeLater(new Runnable() {
+                public void run() {
+                    UiApplication.getUiApplication().invokeLater(new Runnable() {
+                       public void run() {
+                           _bbmpContext.requestAppSettings();
+                           Util.dispatchCallback(onComplete, null);
+                       }
+                    });
+                }
+            });
+            
+            return UNDEFINED;
+        }
+        
+        protected FunctionSignature[] getFunctionSignatures() {
+            FunctionSignature sig1 = new FunctionSignature(1);
+            sig1.addParam(ScriptableFunction.class, true);
+            return new FunctionSignature[] {
+                sig1
+            };
+        }
+    } // ShowOptionsFunction
 }
