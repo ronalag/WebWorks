@@ -31,6 +31,7 @@ public class BBMPlatformUser extends Scriptable {
     public static final String FIELD_HANDLE =       "handle";
     public static final String FIELD_PPID =         "ppid";
     public static final String FIELD_TYPE =         "type";
+    public static final String FIELD_APP_VERSION =  "appVersion";
     
     public static final String STATUS_STR_AVAILABLE = "available";
     public static final String STATUS_STR_BUSY =      "busy";
@@ -57,6 +58,8 @@ public class BBMPlatformUser extends Scriptable {
             return BBMPlatformUser.statusToString(_presence.getStatus());
         } else if(name.equals(BBMPlatformUser.FIELD_STATUS_MSG)) {
             return _presence.getStatusMessage();
+        } else if(name.equals(BBMPlatformUser.FIELD_APP_VERSION)) {
+            return _presence.getAppVersion();
         } else if(name.equals(BBMPlatformUser.FIELD_TYPE)) {
             return "BBM";
         } else if(name.equals(BBMPlatformUser.FIELD_HANDLE)) {
