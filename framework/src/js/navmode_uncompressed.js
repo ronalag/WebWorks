@@ -362,7 +362,7 @@ navigationController = {
                         max : htmlElem.max,
                         step : htmlElem.step
                     },
-                    navigationController.onDATETIME
+                    navigationController.onInput
                 );
                 break;
             case "color" :

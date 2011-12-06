@@ -108,7 +108,7 @@ public class ColorPickerDialog extends Field implements IWebWorksDialog {
         return result;
     }
 
-    public String getSelectedValue() {
+    public Object getSelectedValue() {
         return colorToString( _selectedColor );
     }
 
