@@ -27,6 +27,7 @@ import net.rim.device.api.ui.UiApplication;
 import blackberry.bbm.platform.io.IONamespace;
 import blackberry.bbm.platform.io.MessagingServiceListenerImpl;
 import blackberry.bbm.platform.self.SelfNamespace;
+import blackberry.bbm.platform.settings.SettingsNamespace;
 import blackberry.bbm.platform.ui.UINamespace;
 import blackberry.bbm.platform.users.UsersNamespace;
 import blackberry.bbm.platform.util.ConstantsUtil;
@@ -110,6 +111,8 @@ public final class BBMPlatformNamespace extends Scriptable {
             return IONamespace.getInstance();
         } else if(name.equals(UINamespace.NAME)) {
             return UINamespace.getInstance();
+        } else if(name.equals(SettingsNamespace.NAME)) {
+            return SettingsNamespace.getInstance();
         } else if(_wFields.hasField(name)){
             return _wFields.getField(name);
         } else if(name.equals(FIELD_ENVIRONMENT)) {
@@ -129,7 +132,6 @@ public final class BBMPlatformNamespace extends Scriptable {
         } catch(ControlledAccessException e) {
             return UNDEFINED;
         }
-            
     }
     
     private class RegisterFunction extends ScriptableFunctionBase {
