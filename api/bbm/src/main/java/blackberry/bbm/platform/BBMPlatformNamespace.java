@@ -134,17 +134,38 @@ public final class BBMPlatformNamespace extends Scriptable {
     
     private class RegisterFunction extends ScriptableFunctionBase {
         
-        public static final String OPTIONS_FIELD_UUID = "uuid";
+        public static final String OPTIONS_FIELD_UUID =              "uuid";
+        public static final String OPTIONS_FIELD_SHARECONTENTSPLAT = "shareContentSplat";
         
         protected Object execute(Object thiz, Object[] args) throws Exception {
             final Object onAccessChanged = BBMPlatformNamespace.this.getField(EVENT_ON_ACCESS_CHANGED);
             if(onAccessChanged.equals(UNDEFINED)) {
-                throw new IllegalStateException("blackberry.bbm.platform.onAccessChanged == undefined");
+                throw new IllegalStateException("blackberry.bbm.platform.onaccesschanged == undefined");
             }
             
             final Scriptable options = (Scriptable) args[0];
             final String uuid = (String) options.getField(OPTIONS_FIELD_UUID);
-            final BBMPlatformApplication bbmApp = new BBMPlatformApplication(uuid);
+            
+            // Get optional shareContentSplat property
+            final Object shareContentSplatObj = options.getField(OPTIONS_FIELD_SHARECONTENTSPLAT);
+            boolean shareContentSplat;
+            try {
+                shareContentSplat = ((Boolean) shareContentSplatObj).booleanValue();
+            } catch(Exception e) {
+                shareContentSplat = false;
+            }
+            final boolean finalShareContentSplat = shareContentSplat;
+            
+            final BBMPlatformApplication bbmApp = new BBMPlatformApplication(uuid) {
+                public int getDefaultSettings() {
+                    if(finalShareContentSplat) {
+                        return super.getDefaultSettings() | BBMPlatformContext.SETTING_SHARECONTENT_SPLAT;
+                    } else {
+                        return super.getDefaultSettings();
+                    }
+                    
+                }
+            };
             
             Dispatcher.getInstance().dispatch(new DispatchableEvent(null) {
                 protected void dispatch() {
