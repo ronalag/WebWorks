@@ -52,6 +52,7 @@
         </profile>
     </profiles>
 
+    
    <build>
       <directory>${basedir}/target</directory>
       <plugins>         
