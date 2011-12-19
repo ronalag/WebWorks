@@ -1,0 +1,189 @@
+<project name="BuildDocumentation" default="generate-resources" basedir=".">
+    
+    <property environment="env" />
+    <property name="hudson.url" value="http://localhost:8080/job" />
+    <property name="upstream.project.name" value="WebWorks" />
+    <property name="project.view.prefix" value="" />
+    <property name="win.artifact.name" value="WebWorksForSmartphoneWin" />
+    <property name="mac.artifact.name" value="WebWorksForSmartphoneMac" />
+    <property name="win.artifact.file.name" value="${win.artifact.name}.zip" />
+    <property name="mac.artifact.file.name" value="${mac.artifact.name}.zip" />
+    <property name="win.artifact.url"
+        value="${hudson.url}/${project.view.prefix}${upstream.project.name}/lastSuccessfulBuild/artifact/target/${win.artifact.file.name}" />
+    <property name="mac.artifact.url" 
+        value="${hudson.url}/${project.view.prefix}${upstream.project.name}/lastSuccessfulBuild/artifact/target/${mac.artifact.file.name}" />
+    <property name="project.build.directory" value="${basedir}/target" />
+    <property name="win.artifact.location" value="${project.build.directory}/${win.artifact.file.name}" />
+    <property name="mac.artifact.location" value="${project.build.directory}/${mac.artifact.file.name}" />
+    <property name="win.artifact.content"
+        value="${project.build.directory}/${win.artifact.name}" />
+    <property name="github.user.name" value="blackberry-webworks" />
+    <property name="repo.name" value="WebWorks" />        
+    <property name="bbwp.jar.file.location"
+        value="${win.artifact.content}/bin/bbwp.jar" />
+    <property name="bbwp.jar.file.content"
+        value="${win.artifact.content}/bin/bbwp" />
+    <property name="bbwp.jar.manifest.file.location"
+        value="${win.artifact.content}/bin/bbwp/META-INF/MANIFEST.MF" />
+    <property name="hudson.lastBuild.xml.file.url"
+        value="${hudson.url}/${project.view.prefix}${upstream.project.name}/lastBuild/api/xml" />
+    <property name="hudson.lastBuild.xml.file"
+        value="${project.build.directory}/lastBuild.xml" />
+    <property name="downloads.html.name" value="Downloads.md" />
+    <property name="downloads.html.file" value="${basedir}/${downloads.html.name}" />
+    <property name="no.builds" value="10" />
+        
+    <target name="clean">        
+        <delete dir="${project.build.directory}" verbose="true" />
+        <mkdir dir="${project.build.directory}" />        
+    </target>
+    <target name="generate-resources" depends="clean">        
+        
+        <!-- Retreive artifacts from last successful build -->
+        <get src="${win.artifact.url}" dest="${win.artifact.location}" verbose="true" />
+        <get src="${mac.artifact.url}" dest="${mac.artifact.location}" verbose="true" />
+        
+        <!-- Retreive version number of artifact -->
+        <unzip src="${win.artifact.location}" dest="${win.artifact.content}" />
+        <unjar src="${bbwp.jar.file.location}" dest="${bbwp.jar.file.content}" />
+        <echo message="Retreiving the version number of the latest artifact" />
+        <loadfile property="artifact.version" srcFile="${bbwp.jar.manifest.file.location}">
+            <filterchain>
+                <linecontainsregexp>
+                    <regexp pattern="[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+" />
+                </linecontainsregexp>
+                <replaceregex pattern="Implementation-Version: " replace="" />
+                <replaceregex pattern="-${upstream.project.name}" replace="" />
+                <deletecharacters chars=" \n\r"/>
+            </filterchain>
+        </loadfile>        
+        <property name="artifact.dir" value="${basedir}/${artifact.version}" />  
+                
+        <!-- Fetch xml file with information about latest build artifact -->
+        <get src="${hudson.lastBuild.xml.file.url}"
+            dest="${hudson.lastBuild.xml.file}" verbose="true" />
+        <!-- Load xml file into properties--> 
+        <xmlproperty file="${hudson.lastBuild.xml.file}" />
+        
+        <!-- Check whether page needs to be updated 
+             Repo should be updated if:
+             
+             1. There was a change in the last build and there is no
+                directory corresponding to the last artifact.
+             2. There are no record entries in the downloads html file. -->   
+              
+        <condition property="update.repo">            
+            <or>
+                <and>
+                    <not>
+                        <available file="${artifact.dir}" />
+                    </not>                       
+                    <not>
+                        <equals arg1="${freeStyleBuild.changeSet.item.comment}" 
+                                arg2="$${freeStyleBuild.changeSet.item.comment}" />
+                    </not>
+                </and>
+                <not>
+                    <resourcecontains resource="${downloads.html.file}" 
+                        substring="class=&quot;Record&quot;&gt;&lt;/a&gt;"/>
+                </not>
+            </or>            
+        </condition>
+        
+        <antcall target="update-repo" />
+        <antcall target="dont-update-repo" />
+    </target>
+    <target name="update-repo" if="update.repo">
+        
+        <echo message="Updating the wiki ..." />
+        
+        <echo message="Copying artifacts to ${artifact.dir}" />
+        <!-- Create folder for latest artifacts and move artifacts into folder -->
+        <property name="final.win.artifact.location" value="${artifact.dir}/${win.artifact.file.name}" />
+        <property name="final.mac.artifact.location" value="${artifact.dir}/${mac.artifact.file.name}" />
+        <mkdir dir="${artifact.dir}" />
+        <copy file="${win.artifact.location}" tofile="${final.win.artifact.location}" />
+        <copy file="${mac.artifact.location}" tofile="${final.mac.artifact.location}" />
+        
+        <!-- Append latest build information to the Downloads web page-->
+        
+        <echo message="Prepend record to ${downloads.html.file}" />
+        <!-- Property for link to artifact on github-->
+        <property name="win.github.artifact.location" 
+            value="https://github.com/${github.user.name}/${repo.name}/wiki/${artifact.version}/${win.artifact.file.name}" />
+        <property name="mac.github.artifact.location"
+            value="https://github.com/${github.user.name}/${repo.name}/wiki/${artifact.version}/${mac.artifact.file.name}" /> 
+        <!-- Find length of artifacts-->
+        <length file="${final.win.artifact.location}" property="win.artifact.size" />
+        <length file="${final.mac.artifact.location}" property="mac.artifact.size" />
+        <!-- Add new record into webpage with placeholder values.-->        
+        <replace file="${downloads.html.file}" token="id=&quot;NewRecord&quot;&gt;&lt;/a&gt;">
+                <replacevalue>id=&quot;NewRecord&quot;&gt;&lt;/a&gt;
+        &lt;h3&gt;artifact.version&lt;/h3&gt;
+        &lt;table&gt;  
+            &lt;tr&gt;
+                &lt;td&gt;Version&lt;/td&gt;
+                &lt;td&gt;Modified&lt;/td&gt;
+                &lt;td&gt;Size&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+                &lt;td&gt;&lt;a href=&quot;win.github.artifact.location&quot;&gt;artifact.version-Win&lt;/a&gt;&lt;/td&gt;
+                &lt;td&gt;date.modified&lt;/td&gt;
+                &lt;td&gt;win.artifact.size B&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+                &lt;td&gt;&lt;a href=&quot;mac.github.artifact.location&quot;&gt;artifact.version-Mac&lt;/a&gt;&lt;/td&gt;
+                &lt;td&gt;date.modified&lt;/td&gt;
+                &lt;td&gt;mac.artifact.size B&lt;/td&gt;
+            &lt;/tr&gt;
+        &lt;/table&gt;
+        &lt;h5&gt;Changes&lt;/h5&gt;
+        &lt;pre&gt;No Changes.&lt;/pre&gt;
+        &lt;hr /&gt;
+        &lt;a class=&quot;Record&quot;&gt;&lt;/a&gt;</replacevalue>
+        </replace>        
+        <!-- Replace placeholder values in new record with actual values-->
+        <replace file="${downloads.html.file}">
+            <replacefilter token="win.github.artifact.location" value="${win.github.artifact.location}" />
+            <replacefilter token="mac.github.artifact.location" value="${mac.github.artifact.location}" />
+            <replacefilter token="win.artifact.size" value="${win.artifact.size}" />
+            <replacefilter token="mac.artifact.size" value="${mac.artifact.size}" />
+            <replacefilter token="artifact.version" value="${artifact.version}" />
+            <replacefilter token="date.modified" value="${freeStyleBuild.id}" />
+            <replacefilter token="No Changes." value="${freeStyleBuild.changeSet.item.comment}" />
+        </replace>
+        
+        <!-- Update the html page by deleting excess entries and remove unnecessary artifacts
+             from the repo. -->   
+        <echo message="Updating the wiki html page and deleting unnecessary artifacts ..." /> 
+        
+        <javac srcdir="${basedir}" destdir="${basedir}" includeAntRuntime="false">
+            <include name="UpdateBuilds.java" />
+        </javac>
+        
+        <java classname="net.rim.builds.UpdateBuilds" classpath="${basedir}" fork="true" >
+            <arg value="${downloads.html.name}" />
+            <arg value="${no.builds}" />
+        </java>  
+        
+        <exec executable="git">
+            <arg value="add" />
+            <arg value="${artifact.version}" />
+        </exec>
+        
+        <exec executable="git">
+            <arg value="add" />
+            <arg value="${downloads.html.name}" />
+        </exec>
+        
+        <exec executable="git">
+            <arg value="commit" />
+            <arg value="-am" />
+            <arg value="Posted artifact for version ${artifact.version} to Github" />
+        </exec>
+        
+    </target>  
+    <target name="dont-update-repo" unless="update.repo">
+        <echo message="Need need to update the wiki. Exiting ..." />
+    </target>
+</project>
